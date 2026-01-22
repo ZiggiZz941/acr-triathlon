@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../constants/triathlon_colors.dart';
 import '../../constants/triathlon_dimens.dart';
 import '../../constants/triathlon_strings.dart';
-import '../../constants/triathlon_images.dart'; // IMPORTEZ CE FICHIER
+import '../../constants/triathlon_images.dart';
 import '../../models/sport_type.dart';
 import '../../services/data_manager.dart';
 import 'calcul/calcul_simple_screen.dart';
@@ -11,6 +11,7 @@ import 'calcul/calcul_intensite_screen.dart';
 import 'calcul/chronometre_screen.dart';
 import 'creation/creation_seance_screen.dart';
 import 'creation/creation_seance_intensite_avancee_screen.dart';
+import 'running_start_sequence_screen.dart'; // AJOUTEZ CET IMPORT
 
 class RunningMainScreen extends StatelessWidget {
   const RunningMainScreen({super.key});
@@ -229,6 +230,26 @@ class RunningMainScreen extends StatelessWidget {
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           const ChronometreScreen(),
+                                    ),
+                                  );
+                                },
+                              ),
+
+                              const SizedBox(
+                                  height: TriathlonDimens.paddingMedium),
+
+                              // NOUVEAU BOUTON : Séquence de départ
+                              _buildMenuButton(
+                                context,
+                                icon: Icons.play_circle_fill,
+                                text: 'Séquence de départ',
+                                description: 'À vos marques, Prêt, Partez',
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const RunningStartSequenceScreen(),
                                     ),
                                   );
                                 },

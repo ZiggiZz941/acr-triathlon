@@ -14,7 +14,7 @@ dependencies:
   path_provider: ^2.1.0
   intl: ^0.19.0
   flutter_launcher_icons: ^0.14.4
-  
+  audioplayers: ^6.5.1
   cupertino_icons: ^1.0.2
   equatable: ^2.0.5
 
@@ -31,6 +31,7 @@ flutter:
     - assets/images/cycling_icon.png
     - assets/images/running_icon.png
     - assets/images/swimming_icon.png
+    - assets/audio/
   
 
 flutter_icons:
