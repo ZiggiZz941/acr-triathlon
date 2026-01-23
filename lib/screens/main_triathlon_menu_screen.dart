@@ -289,7 +289,7 @@ class MainTriathlonMenuScreen extends StatelessWidget {
         content: const Text('Application d\'entraînement pour triathlon\n\n'
             'Natation - Cyclisme - Course à pied\n\n'
             'Développé pour les athlètes de tous niveaux\n\n'
-            'Version 1.5.1'),
+            'Version 1.6.1'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
