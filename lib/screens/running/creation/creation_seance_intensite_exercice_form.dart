@@ -1,4 +1,4 @@
-// lib/screens/creation_seance_intensite_exercice_form.dart
+// lib/screens/running/creation/creation_seance_intensite_exercice_form.dart
 import 'package:flutter/material.dart';
 import '../../../constants/triathlon_colors.dart';
 import '../../../constants/triathlon_dimens.dart';
@@ -27,14 +27,28 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
     with SingleTickerProviderStateMixin {
   final TextEditingController _nomController = TextEditingController();
   final TextEditingController _distanceController = TextEditingController();
-  final TextEditingController _tempsReferenceController =
+
+  // NOUVEAUX: Contrôleurs pour le temps de référence
+  final TextEditingController _tempsRefMinutesController =
       TextEditingController();
+  final TextEditingController _tempsRefSecondesController =
+      TextEditingController();
+  final TextEditingController _tempsRefCentiemesController =
+      TextEditingController();
+
   final TextEditingController _seriesController = TextEditingController();
   final TextEditingController _repetitionsController = TextEditingController();
   final TextEditingController _intensiteController = TextEditingController();
-  final TextEditingController _reposRepetitionsController =
+
+  // Contrôleurs pour les repos
+  final TextEditingController _reposRepetitionsMinController =
       TextEditingController();
-  final TextEditingController _reposSeriesController = TextEditingController();
+  final TextEditingController _reposRepetitionsSecController =
+      TextEditingController();
+  final TextEditingController _reposSeriesMinController =
+      TextEditingController();
+  final TextEditingController _reposSeriesSecController =
+      TextEditingController();
 
   bool _showResult = false;
   String _resultText = '--:--.--';
@@ -42,6 +56,11 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
 
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
+
+  // Focus nodes pour la navigation entre champs
+  final FocusNode _tempsRefMinutesFocus = FocusNode();
+  final FocusNode _tempsRefSecondesFocus = FocusNode();
+  final FocusNode _tempsRefCentiemesFocus = FocusNode();
 
   @override
   void initState() {
@@ -72,7 +91,7 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
     _nomController.text = widget.exercice.nom;
     _distanceController.text = widget.exercice.distance > 0
         ? widget.exercice.distance.toInt().toString()
-        : '';
+        : widget.sportType.defaultDistance.toString();
     _seriesController.text = widget.exercice.nbSeries > 0
         ? widget.exercice.nbSeries.toString()
         : '1';
@@ -83,27 +102,65 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
         ? widget.exercice.valeurReference.toStringAsFixed(1)
         : '100.0';
 
-    // Initialiser le temps de référence
-    if (widget.exercice.tempsReference > 0) {
-      _tempsReferenceController.text =
-          _formatTempsSecondes(widget.exercice.tempsReference);
-    } else {
+    // Initialiser les contrôleurs de repos
+    _initializeTimeControllers();
+
+    // NOUVEAU: Initialiser le temps de référence séparé en minutes, secondes, centièmes
+    _initializeTempsReference();
+
+    // Si des valeurs sont déjà présentes, calculer
+    if (widget.exercice.distance > 0 && widget.exercice.tempsReference > 0) {
+      _updateExercice();
+    }
+  }
+
+  // NOUVEAU: Initialiser le temps de référence séparé
+  void _initializeTempsReference() {
+    double tempsRef = widget.exercice.tempsReference;
+
+    if (tempsRef <= 0) {
       // Valeur par défaut selon le sport
       switch (widget.sportType) {
         case SportType.swimming:
-          _tempsReferenceController.text = '1:30.00'; // 1:30 pour 100m
+          tempsRef = 90.0; // 1:30.00 pour 100m
           break;
         case SportType.cycling:
-          _tempsReferenceController.text = '0:20.00'; // 20s pour 100m
+          tempsRef = 20.0; // 0:20.00 pour 100m
           break;
         case SportType.running:
-          _tempsReferenceController.text = '0:45.00'; // 45s pour 100m
+          tempsRef = 45.0; // 0:45.00 pour 100m
           break;
       }
     }
 
-    _reposRepetitionsController.text = widget.exercice.reposRepetitionsFormate;
-    _reposSeriesController.text = widget.exercice.reposSeriesFormate;
+    // Convertir en minutes, secondes, centièmes
+    int minutes = (tempsRef ~/ 60).toInt();
+    int secondes = (tempsRef % 60).toInt();
+    int centiemes = ((tempsRef % 1) * 100).toInt();
+
+    _tempsRefMinutesController.text = minutes.toString();
+    _tempsRefSecondesController.text = secondes.toString().padLeft(2, '0');
+    _tempsRefCentiemesController.text = centiemes.toString().padLeft(2, '0');
+  }
+
+  // Initialiser les contrôleurs de repos
+  void _initializeTimeControllers() {
+    // Pour repos répétitions
+    int reposRepSec = widget.exercice.reposRepetitionsSec;
+    int reposRepMin = reposRepSec ~/ 60;
+    int reposRepSecRest = reposRepSec % 60;
+
+    _reposRepetitionsMinController.text = reposRepMin.toString();
+    _reposRepetitionsSecController.text =
+        reposRepSecRest.toString().padLeft(2, '0');
+
+    // Pour repos séries
+    int reposSerSec = widget.exercice.reposSeriesSec;
+    int reposSerMin = reposSerSec ~/ 60;
+    int reposSerSecRest = reposSerSec % 60;
+
+    _reposSeriesMinController.text = reposSerMin.toString();
+    _reposSeriesSecController.text = reposSerSecRest.toString().padLeft(2, '0');
   }
 
   @override
@@ -111,12 +168,25 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
     _animationController.dispose();
     _nomController.dispose();
     _distanceController.dispose();
-    _tempsReferenceController.dispose();
+
+    // NOUVEAU: Dispose des nouveaux contrôleurs
+    _tempsRefMinutesController.dispose();
+    _tempsRefSecondesController.dispose();
+    _tempsRefCentiemesController.dispose();
+
     _seriesController.dispose();
     _repetitionsController.dispose();
     _intensiteController.dispose();
-    _reposRepetitionsController.dispose();
-    _reposSeriesController.dispose();
+    _reposRepetitionsMinController.dispose();
+    _reposRepetitionsSecController.dispose();
+    _reposSeriesMinController.dispose();
+    _reposSeriesSecController.dispose();
+
+    // Dispose des focus nodes
+    _tempsRefMinutesFocus.dispose();
+    _tempsRefSecondesFocus.dispose();
+    _tempsRefCentiemesFocus.dispose();
+
     super.dispose();
   }
 
@@ -143,20 +213,20 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
                   'Exercice ${widget.sportType.displayName}',
                   style: TextStyle(
                     color: sportColor,
-                    fontSize: 20,
+                    fontSize: TriathlonDimens.fontSizeXLarge,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: widget.onSupprimer,
-                  icon: Icon(Icons.close, color: sportColor),
+                  icon: Icon(Icons.close, color: sportColor, size: 24),
                   iconSize: 24,
                 ),
               ],
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: TriathlonDimens.paddingMedium),
 
             // Nom de l'exercice
             Text(
@@ -187,7 +257,7 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: TriathlonDimens.paddingMedium),
 
             // Distance
             Text(
@@ -219,40 +289,176 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: TriathlonDimens.paddingMedium),
 
-            // Temps de référence
+            // NOUVEAU: Temps de référence séparé en Minutes/Secondes/Centièmes
             Text(
               'Temps de référence',
               style: TextStyle(color: sportColor, fontSize: 16),
             ),
             const SizedBox(height: 5),
-            TextField(
-              controller: _tempsReferenceController,
-              onChanged: (_) => _updateExercice(),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.white,
-                hintText: 'Ex: 12.50 ou 1:12.50',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                    TriathlonDimens.borderRadiusMedium,
+            Row(
+              children: [
+                // Minutes
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Minutes',
+                        style: TextStyle(
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      TextField(
+                        controller: _tempsRefMinutesController,
+                        focusNode: _tempsRefMinutesFocus,
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          if (value.length == 2) {
+                            FocusScope.of(context)
+                                .requestFocus(_tempsRefSecondesFocus);
+                          }
+                          _updateExercice();
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: '0',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              TriathlonDimens.borderRadiusMedium,
+                            ),
+                            borderSide: BorderSide(
+                              color: sportColor,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: TriathlonDimens.paddingMedium,
+                            vertical: TriathlonDimens.paddingMedium,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  borderSide: BorderSide(
+                ),
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+                Text(
+                  ':',
+                  style: TextStyle(
                     color: sportColor,
-                    width: 2,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: TriathlonDimens.paddingMedium,
-                  vertical: TriathlonDimens.paddingMedium,
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+
+                // Secondes
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Secondes',
+                        style: TextStyle(
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      TextField(
+                        controller: _tempsRefSecondesController,
+                        focusNode: _tempsRefSecondesFocus,
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          if (value.length == 2) {
+                            FocusScope.of(context)
+                                .requestFocus(_tempsRefCentiemesFocus);
+                          }
+                          _updateExercice();
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: '00',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              TriathlonDimens.borderRadiusMedium,
+                            ),
+                            borderSide: BorderSide(
+                              color: sportColor,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: TriathlonDimens.paddingMedium,
+                            vertical: TriathlonDimens.paddingMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+                Text(
+                  '.',
+                  style: TextStyle(
+                    color: sportColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+
+                // Centièmes
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Centièmes',
+                        style: TextStyle(
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      TextField(
+                        controller: _tempsRefCentiemesController,
+                        focusNode: _tempsRefCentiemesFocus,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => _updateExercice(),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: '00',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              TriathlonDimens.borderRadiusMedium,
+                            ),
+                            borderSide: BorderSide(
+                              color: sportColor,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: TriathlonDimens.paddingMedium,
+                            vertical: TriathlonDimens.paddingMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: TriathlonDimens.paddingMedium),
 
-            // Deux colonnes Séries/Répétitions
+            // Séries et Répétitions
             Row(
               children: [
                 // Séries
@@ -295,7 +501,7 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
                   ),
                 ),
 
-                const SizedBox(width: 8),
+                const SizedBox(width: TriathlonDimens.paddingMedium),
 
                 // Répétitions
                 Expanded(
@@ -339,7 +545,7 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
               ],
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: TriathlonDimens.paddingMedium),
 
             // Intensité
             Text(
@@ -371,31 +577,39 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: TriathlonDimens.paddingMedium),
 
-            // Deux colonnes Repos
+            // Repos répétitions (Minutes/Secondes)
+            Text(
+              'Repos répétitions',
+              style: TextStyle(
+                color: sportColor,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 5),
             Row(
               children: [
-                // Repos répétitions
                 Expanded(
+                  flex: 2,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Repos répétitions',
+                        'Minutes',
                         style: TextStyle(
-                          color: sportColor,
-                          fontSize: 16,
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 5),
                       TextField(
-                        controller: _reposRepetitionsController,
+                        controller: _reposRepetitionsMinController,
+                        keyboardType: TextInputType.number,
                         onChanged: (_) => _updateExercice(),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          hintText: 'Ex: 0:45',
+                          hintText: 'Min',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               TriathlonDimens.borderRadiusMedium,
@@ -414,29 +628,36 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
                     ],
                   ),
                 ),
-
-                const SizedBox(width: 8),
-
-                // Repos séries
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+                Text(
+                  ':',
+                  style: TextStyle(
+                    color: sportColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: TriathlonDimens.paddingSmall),
                 Expanded(
+                  flex: 2,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Repos séries',
+                        'Secondes',
                         style: TextStyle(
-                          color: sportColor,
-                          fontSize: 16,
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 5),
                       TextField(
-                        controller: _reposSeriesController,
+                        controller: _reposRepetitionsSecController,
+                        keyboardType: TextInputType.number,
                         onChanged: (_) => _updateExercice(),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          hintText: 'Ex: 2:00',
+                          hintText: 'Sec',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               TriathlonDimens.borderRadiusMedium,
@@ -458,12 +679,114 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
               ],
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: TriathlonDimens.paddingMedium),
+
+            // Repos séries (Minutes/Secondes)
+            Text(
+              'Repos séries',
+              style: TextStyle(
+                color: sportColor,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Minutes',
+                        style: TextStyle(
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      TextField(
+                        controller: _reposSeriesMinController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => _updateExercice(),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: 'Min',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              TriathlonDimens.borderRadiusMedium,
+                            ),
+                            borderSide: BorderSide(
+                              color: sportColor,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: TriathlonDimens.paddingMedium,
+                            vertical: TriathlonDimens.paddingMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+                Text(
+                  ':',
+                  style: TextStyle(
+                    color: sportColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Secondes',
+                        style: TextStyle(
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      TextField(
+                        controller: _reposSeriesSecController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => _updateExercice(),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: 'Sec',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              TriathlonDimens.borderRadiusMedium,
+                            ),
+                            borderSide: BorderSide(
+                              color: sportColor,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: TriathlonDimens.paddingMedium,
+                            vertical: TriathlonDimens.paddingMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: TriathlonDimens.paddingLarge),
 
             // Bouton Prévisualiser
             SizedBox(
               width: double.infinity,
-              height: 50,
+              height: TriathlonDimens.buttonHeight,
               child: ElevatedButton(
                 onPressed: () {
                   _updateExercice();
@@ -487,7 +810,7 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
               ),
             ),
 
-            const SizedBox(height: 15),
+            const SizedBox(height: TriathlonDimens.paddingMedium),
 
             // Zone résultat
             AnimatedOpacity(
@@ -503,7 +826,9 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
                       scale: _scaleAnimation,
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(15),
+                        padding: const EdgeInsets.all(
+                          TriathlonDimens.paddingLarge,
+                        ),
                         decoration: BoxDecoration(
                           border: Border.all(color: sportColor, width: 2),
                           borderRadius: BorderRadius.circular(
@@ -539,7 +864,9 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
                     // Description
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(15),
+                      padding: const EdgeInsets.all(
+                        TriathlonDimens.paddingMedium,
+                      ),
                       decoration: BoxDecoration(
                         color: sportColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(
@@ -568,10 +895,6 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
     try {
       // Parser les valeurs
       String nom = _nomController.text.trim();
-      if (nom.isEmpty) {
-        nom = 'Exercice ${widget.sportType.displayName}';
-      }
-
       double distance = double.parse(
         _distanceController.text.replaceAll(',', '.'),
       );
@@ -580,16 +903,18 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
       double intensite =
           double.parse(_intensiteController.text.replaceAll(',', '.'));
 
-      // Convertir le temps de référence
-      double tempsReference =
-          _convertirTempsEnSecondes(_tempsReferenceController.text);
+      // NOUVEAU: Convertir le temps de référence depuis les champs séparés
+      double tempsReference = _convertirTempsReferenceEnSecondes();
 
-      int reposRepSec = TriathlonExercice.parseTempsEnSecondes(
-        _reposRepetitionsController.text,
-      );
-      int reposSerSec = TriathlonExercice.parseTempsEnSecondes(
-        _reposSeriesController.text,
-      );
+      // Parser les minutes et secondes pour repos répétitions
+      int reposRepMin = int.tryParse(_reposRepetitionsMinController.text) ?? 0;
+      int reposRepSec = int.tryParse(_reposRepetitionsSecController.text) ?? 0;
+      int reposRepTotalSec = (reposRepMin * 60) + reposRepSec;
+
+      // Parser les minutes et secondes pour repos séries
+      int reposSerMin = int.tryParse(_reposSeriesMinController.text) ?? 0;
+      int reposSerSec = int.tryParse(_reposSeriesSecController.text) ?? 0;
+      int reposSerTotalSec = (reposSerMin * 60) + reposSerSec;
 
       // Validations
       if (distance <= 0 ||
@@ -600,13 +925,40 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
         return;
       }
 
+      // Validation des secondes et centièmes
+      int secondes = int.tryParse(_tempsRefSecondesController.text) ?? 0;
+      int centiemes = int.tryParse(_tempsRefCentiemesController.text) ?? 0;
+
+      if (secondes >= 60) {
+        // Corriger automatiquement si secondes >= 60
+        int minutesAjoutees = secondes ~/ 60;
+        secondes = secondes % 60;
+        int minutesActuelles =
+            int.tryParse(_tempsRefMinutesController.text) ?? 0;
+        _tempsRefMinutesController.text =
+            (minutesActuelles + minutesAjoutees).toString();
+        _tempsRefSecondesController.text = secondes.toString().padLeft(2, '0');
+      }
+
+      if (centiemes >= 100) {
+        // Corriger automatiquement si centièmes >= 100
+        int secondesAjoutees = centiemes ~/ 100;
+        centiemes = centiemes % 100;
+        secondes += secondesAjoutees;
+        _tempsRefSecondesController.text = secondes.toString().padLeft(2, '0');
+        _tempsRefCentiemesController.text =
+            centiemes.toString().padLeft(2, '0');
+      }
+
       if (repetitions <= 0) repetitions = 1;
-      if (reposRepSec < 0) reposRepSec = 0;
-      if (reposSerSec < 0) reposSerSec = 0;
+      if (reposRepTotalSec < 0) reposRepTotalSec = 0;
+      if (reposSerTotalSec < 0) reposSerTotalSec = 0;
 
       // Si une seule série, ignorer le repos entre séries
       if (series == 1) {
-        reposSerSec = 0;
+        reposSerTotalSec = 0;
+        _reposSeriesMinController.text = '0';
+        _reposSeriesSecController.text = '00';
       }
 
       // Mettre à jour l'exercice
@@ -616,22 +968,29 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
       widget.exercice.nbRepetitions = repetitions;
       widget.exercice.valeurReference = intensite;
       widget.exercice.tempsReference = tempsReference;
-      widget.exercice.reposRepetitionsSec = reposRepSec;
-      widget.exercice.reposSeriesSec = reposSerSec;
+      widget.exercice.reposRepetitionsSec = reposRepTotalSec;
+      widget.exercice.reposSeriesSec = reposSerTotalSec;
 
       // Calculer le temps à l'intensité donnée
-      // Formule: Temps calculé = (Temps référence * 100) / Intensité
       double tempsCalcule = (tempsReference * 100.0) / intensite;
 
       // Mettre à jour les temps min et max de l'exercice
       widget.exercice.tempsMin = tempsCalcule;
       widget.exercice.tempsMax = tempsCalcule;
 
+      // Formater les temps de repos
+      String reposRepFormate =
+          TriathlonExercice.formatTempsEnMinutes(reposRepTotalSec);
+      String reposSerFormate =
+          TriathlonExercice.formatTempsEnMinutes(reposSerTotalSec);
+
       // Mettre à jour le texte de résultat
       setState(() {
         _resultText = _formatResultAvecCentiemes(tempsCalcule);
         _resultDescription =
-            _getResultDescription(tempsCalcule, series, repetitions);
+            '$series séries de $repetitions × ${distance.toInt()}m à ${intensite.toStringAsFixed(1)}%\n'
+            'Repos entre répétitions: $reposRepFormate\n'
+            'Repos entre séries: $reposSerFormate';
         _showResult = true;
       });
 
@@ -642,41 +1001,34 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
     }
   }
 
-  double _convertirTempsEnSecondes(String tempsStr) {
+  // NOUVEAU: Fonction pour convertir le temps de référence en secondes
+  double _convertirTempsReferenceEnSecondes() {
     try {
-      if (tempsStr.trim().isEmpty) return 0;
+      int minutes = int.tryParse(_tempsRefMinutesController.text) ?? 0;
+      int secondes = int.tryParse(_tempsRefSecondesController.text) ?? 0;
+      int centiemes = int.tryParse(_tempsRefCentiemesController.text) ?? 0;
 
-      // Si le temps contient ':' (format mm:ss.xx)
-      if (tempsStr.contains(":")) {
-        List<String> parties = tempsStr.split(":");
-        if (parties.length == 2) {
-          double minutes = double.parse(parties[0].replaceAll(',', '.'));
-          double secondes = double.parse(parties[1].replaceAll(',', '.'));
-          if (minutes < 0 || secondes < 0 || secondes >= 60) {
-            return 0;
-          }
-          return (minutes * 60) + secondes;
-        }
+      // Validation
+      if (secondes >= 60) {
+        minutes += secondes ~/ 60;
+        secondes = secondes % 60;
       }
-      // Sinon, c'est en secondes (format ss.xx)
-      double secondes = double.parse(tempsStr.replaceAll(',', '.'));
-      if (secondes < 0) {
+
+      if (centiemes >= 100) {
+        secondes += centiemes ~/ 100;
+        centiemes = centiemes % 100;
+      }
+
+      // Convertir en secondes avec décimales
+      double totalSecondes = (minutes * 60) + secondes + (centiemes / 100.0);
+
+      if (totalSecondes < 0) {
         return 0;
       }
-      return secondes;
+
+      return totalSecondes;
     } catch (e) {
       return 0;
-    }
-  }
-
-  String _formatTempsSecondes(double seconds) {
-    int minutes = (seconds ~/ 60).toInt();
-    double secondesDecimal = seconds % 60;
-
-    if (minutes > 0) {
-      return '${minutes}:${secondesDecimal.toStringAsFixed(2).padLeft(5, '0')}';
-    } else {
-      return secondesDecimal.toStringAsFixed(2);
     }
   }
 
@@ -684,34 +1036,18 @@ class _IntensiteExerciceFormState extends State<IntensiteExerciceForm>
     int minutes = (seconds ~/ 60).toInt();
     double secondesDecimal = seconds % 60;
 
-    // Correction: gérer le cas où secondesDecimal >= 60
     if (secondesDecimal >= 60) {
       minutes += (secondesDecimal ~/ 60).toInt();
       secondesDecimal = secondesDecimal % 60;
     }
 
-    // Formater avec 2 décimales
+    int secondesInt = secondesDecimal.toInt();
+    int centiemes = ((secondesDecimal - secondesInt) * 100).toInt();
+
     if (minutes > 0) {
-      return '${minutes}:${secondesDecimal.toStringAsFixed(2).padLeft(5, '0')}';
+      return '${minutes}:${secondesInt.toString().padLeft(2, '0')}.${centiemes.toString().padLeft(2, '0')}';
     } else {
-      return '${secondesDecimal.toStringAsFixed(2)}';
+      return '${secondesInt.toString().padLeft(2, '0')}.${centiemes.toString().padLeft(2, '0')}';
     }
-  }
-
-  String _getResultDescription(
-      double tempsCalcule, int series, int repetitions) {
-    double distance =
-        double.parse(_distanceController.text.replaceAll(',', '.'));
-    double intensite =
-        double.parse(_intensiteController.text.replaceAll(',', '.'));
-
-    String distanceFormatted;
-    if (distance >= 1000) {
-      distanceFormatted = '${(distance / 1000).toStringAsFixed(1)} km';
-    } else {
-      distanceFormatted = '${distance.toInt()} m';
-    }
-
-    return '${series} série(s) de ${repetitions} × ${distanceFormatted} à ${intensite.toStringAsFixed(1)}%';
   }
 }

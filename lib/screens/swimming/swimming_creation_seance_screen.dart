@@ -172,7 +172,7 @@ class _SwimmingCreationSeanceScreenState
 
                           const SizedBox(height: TriathlonDimens.paddingLarge),
 
-                          // Titre exercices - CORRECTION ICI
+                          // Titre exercices
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               horizontal: TriathlonDimens.paddingSmall,
@@ -224,8 +224,6 @@ class _SwimmingCreationSeanceScreenState
                                     ),
                                   ],
                                 ),
-
-                                // Bouton Ajouter en dessous du titre
                               ],
                             ),
                           ),
@@ -257,7 +255,7 @@ class _SwimmingCreationSeanceScreenState
                             },
                           ),
 
-                          // Bouton Ajouter (version mobile pour ajouter plus facilement)
+                          // Bouton Ajouter
                           Padding(
                             padding: const EdgeInsets.symmetric(
                               vertical: TriathlonDimens.paddingLarge,
@@ -337,8 +335,7 @@ class _SwimmingCreationSeanceScreenState
                   ),
                 ),
                 SizedBox(
-                  height: MediaQuery.of(context).viewPadding.bottom +
-                      10, // ← IMPORTANT
+                  height: MediaQuery.of(context).viewPadding.bottom + 10,
                 ),
               ],
             ),
@@ -356,8 +353,9 @@ class _SwimmingCreationSeanceScreenState
       distance: 100,
       nbSeries: 3,
       nbRepetitions: 1,
-      valeurReference: 90.0, // Temps pour 100m par défaut (1:30)
-      intensite: 80, // 80% par défaut
+      valeurReference:
+          90.0, // 1:30.00 pour 100m par défaut (soit 6:00.00 pour 400m)
+      intensite: 100, // Toujours 100% quand on spécifie l'allure
       reposRepetitionsSec: 30,
       reposSeriesSec: 120,
     );

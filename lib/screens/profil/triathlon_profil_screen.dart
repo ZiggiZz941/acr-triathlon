@@ -14,7 +14,15 @@ class TriathlonProfilScreen extends StatefulWidget {
 class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
   final TextEditingController _nomController = TextEditingController();
   final TextEditingController _prenomController = TextEditingController();
-  final TextEditingController _swimmingTimeController = TextEditingController();
+
+  // NOUVEAU: Contrôleurs séparés pour le temps de natation
+  final TextEditingController _swimmingMinutesController =
+      TextEditingController();
+  final TextEditingController _swimmingSecondesController =
+      TextEditingController();
+  final TextEditingController _swimmingCentiemesController =
+      TextEditingController();
+
   final TextEditingController _cyclingFtpController = TextEditingController();
   final TextEditingController _runningVmaController = TextEditingController();
   final TextEditingController _poidsController = TextEditingController();
@@ -47,10 +55,15 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
       // Charger le profil triathlon
       final profile = dataManager.getTriathlonProfile();
 
+      // NOUVEAU: Initialiser le temps de natation séparé en minutes/secondes/centièmes
       if (profile['swimming_400m_time'] != null) {
-        _swimmingTimeController.text = _formatSwimmingTime(
-          profile['swimming_400m_time'] as double,
-        );
+        final swimmingTime = profile['swimming_400m_time'] as double;
+        _initializeSwimmingTime(swimmingTime);
+      } else {
+        // Valeurs par défaut
+        _swimmingMinutesController.text = '6';
+        _swimmingSecondesController.text = '30';
+        _swimmingCentiemesController.text = '00';
       }
 
       if (profile['cycling_ftp'] != null) {
@@ -61,7 +74,7 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
         _runningVmaController.text = profile['running_vma'].toStringAsFixed(1);
       }
 
-      // CORRECTION ICI : Charger le poids du profil
+      // Charger le poids du profil
       if (profile['poids'] != null) {
         final poids = profile['poids'] as double;
         _poidsController.text = poids.toStringAsFixed(1);
@@ -85,28 +98,53 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
     }
   }
 
-  String _formatSwimmingTime(double seconds) {
+  // NOUVEAU: Fonction pour initialiser le temps de natation séparé
+  void _initializeSwimmingTime(double seconds) {
     int minutes = (seconds ~/ 60).toInt();
-    double remainingSeconds = seconds % 60;
+    int secondes = (seconds % 60).toInt();
+    int centiemes = ((seconds % 1) * 100).toInt();
 
-    if (minutes > 0) {
-      return '$minutes:${remainingSeconds.toStringAsFixed(2).padLeft(5, '0')}';
-    } else {
-      return remainingSeconds.toStringAsFixed(2);
-    }
+    _swimmingMinutesController.text = minutes.toString();
+    _swimmingSecondesController.text = secondes.toString().padLeft(2, '0');
+    _swimmingCentiemesController.text = centiemes.toString().padLeft(2, '0');
   }
 
-  double? _parseSwimmingTime(String timeStr) {
+  // NOUVEAU: Fonction pour convertir le temps de natation en secondes
+  double? _convertirSwimmingTimeEnSecondes() {
     try {
-      if (timeStr.contains(':')) {
-        List<String> parts = timeStr.split(':');
-        if (parts.length == 2) {
-          int minutes = int.parse(parts[0]);
-          double seconds = double.parse(parts[1].replaceAll(',', '.'));
-          return (minutes * 60.0) + seconds;
-        }
+      int minutes = int.tryParse(_swimmingMinutesController.text) ?? 0;
+      int secondes = int.tryParse(_swimmingSecondesController.text) ?? 0;
+      int centiemes = int.tryParse(_swimmingCentiemesController.text) ?? 0;
+
+      // Validation et correction automatique
+      if (secondes >= 60) {
+        minutes += secondes ~/ 60;
+        secondes = secondes % 60;
+        _swimmingMinutesController.text = minutes.toString();
+        _swimmingSecondesController.text = secondes.toString().padLeft(2, '0');
       }
-      return double.parse(timeStr.replaceAll(',', '.'));
+
+      if (centiemes >= 100) {
+        secondes += centiemes ~/ 100;
+        centiemes = centiemes % 100;
+        if (secondes >= 60) {
+          minutes += secondes ~/ 60;
+          secondes = secondes % 60;
+          _swimmingMinutesController.text = minutes.toString();
+        }
+        _swimmingSecondesController.text = secondes.toString().padLeft(2, '0');
+        _swimmingCentiemesController.text =
+            centiemes.toString().padLeft(2, '0');
+      }
+
+      // Convertir en secondes avec décimales
+      double totalSecondes = (minutes * 60) + secondes + (centiemes / 100.0);
+
+      if (totalSecondes <= 0 || totalSecondes > 1200) {
+        return null;
+      }
+
+      return totalSecondes;
     } catch (e) {
       return null;
     }
@@ -323,25 +361,8 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
 
                 const SizedBox(height: 20),
 
-                // Natation
-                _buildSportCard(
-                  context,
-                  sportType: SportType.swimming,
-                  title: 'Natation',
-                  subtitle: 'Temps au 400m',
-                  controller: _swimmingTimeController,
-                  hintText: 'Ex: 6:30.50 (mm:ss.xx)',
-                  icon: Icons.pool,
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      double? time = _parseSwimmingTime(value);
-                      if (time == null || time <= 0 || time > 1200) {
-                        return 'Temps invalide (ex: 6:30.50)';
-                      }
-                    }
-                    return null;
-                  },
-                ),
+                // Natation - MODIFIÉ
+                _buildSwimmingCard(context),
 
                 const SizedBox(height: 15),
 
@@ -513,6 +534,260 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
     );
   }
 
+  // NOUVEAU: Widget spécifique pour la natation
+  Widget _buildSwimmingCard(BuildContext context) {
+    final sportType = SportType.swimming;
+
+    return Card(
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            left: BorderSide(
+              color: sportType.color,
+              width: 5,
+            ),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.pool,
+                    color: sportType.color,
+                    size: 24,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Natation',
+                          style: TextStyle(
+                            color: sportType.color,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Temps au 400m',
+                          style: TextStyle(
+                            color: TriathlonColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+
+              // NOUVEAU: Champ séparé en Minutes/Secondes/Centièmes
+              Row(
+                children: [
+                  // Minutes
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Minutes',
+                          style: TextStyle(
+                            color: TriathlonColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                        TextFormField(
+                          controller: _swimmingMinutesController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            hintText: '0',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: sportType.color,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 12,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value != null && value.isNotEmpty) {
+                              int? minutes = int.tryParse(value);
+                              if (minutes == null ||
+                                  minutes < 0 ||
+                                  minutes > 20) {
+                                return 'Min invalide';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Séparateur :
+                  Container(
+                    alignment: Alignment.bottomCenter,
+                    height: 60,
+                    child: Text(
+                      ':',
+                      style: TextStyle(
+                        color: sportType.color,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Secondes
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Secondes',
+                          style: TextStyle(
+                            color: TriathlonColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                        TextFormField(
+                          controller: _swimmingSecondesController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            hintText: '00',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: sportType.color,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 12,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value != null && value.isNotEmpty) {
+                              int? secondes = int.tryParse(value);
+                              if (secondes == null ||
+                                  secondes < 0 ||
+                                  secondes >= 60) {
+                                return 'Sec invalide';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Séparateur .
+                  Container(
+                    alignment: Alignment.bottomCenter,
+                    height: 60,
+                    child: Text(
+                      '.',
+                      style: TextStyle(
+                        color: sportType.color,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Centièmes
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Centièmes',
+                          style: TextStyle(
+                            color: TriathlonColors.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                        TextFormField(
+                          controller: _swimmingCentiemesController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.white,
+                            hintText: '00',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: sportType.color,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 12,
+                            ),
+                          ),
+                          validator: (value) {
+                            if (value != null && value.isNotEmpty) {
+                              int? centiemes = int.tryParse(value);
+                              if (centiemes == null ||
+                                  centiemes < 0 ||
+                                  centiemes >= 100) {
+                                return 'Cent invalide';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // Aide pour le format
+              Padding(
+                padding: const EdgeInsets.only(top: 8, left: 4),
+                child: Text(
+                  'Format: minutes:secondes.centièmes (ex: 6:30.50)',
+                  style: TextStyle(
+                    color: TriathlonColors.textSecondary,
+                    fontSize: 11,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSportCard(
     BuildContext context, {
     required SportType sportType,
@@ -608,11 +883,10 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
     // Préparer le profil triathlon
     Map<String, dynamic> profile = {};
 
-    if (_swimmingTimeController.text.isNotEmpty) {
-      double? swimmingTime = _parseSwimmingTime(_swimmingTimeController.text);
-      if (swimmingTime != null) {
-        profile['swimming_400m_time'] = swimmingTime;
-      }
+    // NOUVEAU: Sauvegarder le temps de natation converti
+    double? swimmingTime = _convertirSwimmingTimeEnSecondes();
+    if (swimmingTime != null) {
+      profile['swimming_400m_time'] = swimmingTime;
     }
 
     if (_cyclingFtpController.text.isNotEmpty) {
@@ -659,7 +933,9 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
           TextButton(
             onPressed: () {
               setState(() {
-                _swimmingTimeController.clear();
+                _swimmingMinutesController.clear();
+                _swimmingSecondesController.clear();
+                _swimmingCentiemesController.clear();
                 _cyclingFtpController.clear();
                 _runningVmaController.clear();
                 _poidsController.clear();

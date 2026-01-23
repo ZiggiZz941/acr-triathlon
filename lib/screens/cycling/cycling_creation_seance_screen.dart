@@ -34,289 +34,294 @@ class _CyclingCreationSeanceScreenState
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: TriathlonColors.background,
-      body: Column(
-        children: [
-          // Header
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(
-              top: 50,
-              bottom: 20,
-              left: TriathlonDimens.paddingLarge,
-              right: TriathlonDimens.paddingLarge,
-            ),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: TriathlonColors.cyclingGradient,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(
+                top: 20,
+                bottom: 20,
+                left: TriathlonDimens.paddingLarge,
+                right: TriathlonDimens.paddingLarge,
               ),
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(TriathlonDimens.borderRadiusXLarge),
-                bottomRight:
-                    Radius.circular(TriathlonDimens.borderRadiusXLarge),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: TriathlonColors.cyclingGradient,
+                ),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft:
+                      Radius.circular(TriathlonDimens.borderRadiusXLarge),
+                  bottomRight:
+                      Radius.circular(TriathlonDimens.borderRadiusXLarge),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Création de séance - Cyclisme',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: TriathlonDimens.fontSizeXXLarge,
-                    fontWeight: FontWeight.bold,
+              child: Column(
+                children: [
+                  Text(
+                    'Création de séance - Cyclisme',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: TriathlonDimens.fontSizeXXLarge,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Concevez votre programme d\'entraînement',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: TriathlonDimens.fontSizeMedium,
+                  const SizedBox(height: 4),
+                  Text(
+                    'Concevez votre programme d\'entraînement',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                      fontSize: TriathlonDimens.fontSizeMedium,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
 
-          // Contenu
-          Expanded(
-            child: Column(
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.all(TriathlonDimens.paddingMedium),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          // Carte nom de séance
-                          Card(
-                            elevation: TriathlonDimens.elevationLarge,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(
-                                TriathlonDimens.borderRadiusLarge,
+            // Contenu
+            Expanded(
+              child: Column(
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding:
+                          const EdgeInsets.all(TriathlonDimens.paddingMedium),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            // Carte nom de séance
+                            Card(
+                              elevation: TriathlonDimens.elevationLarge,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  TriathlonDimens.borderRadiusLarge,
+                                ),
+                              ),
+                              color: Colors.white,
+                              child: Padding(
+                                padding: const EdgeInsets.all(
+                                  TriathlonDimens.paddingLarge,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Nom de la séance',
+                                      style: TextStyle(
+                                        color: TriathlonColors.cycling,
+                                        fontSize:
+                                            TriathlonDimens.fontSizeXLarge,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                        height: TriathlonDimens.paddingMedium),
+                                    TextField(
+                                      controller: _nomSeanceController,
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        hintText: 'Ex: Séance intervalles FTP',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            TriathlonDimens.borderRadiusMedium,
+                                          ),
+                                          borderSide: BorderSide(
+                                            color: TriathlonColors.cycling,
+                                            width: TriathlonDimens.borderWidth,
+                                          ),
+                                        ),
+                                        prefixIcon: Icon(
+                                          Icons.title,
+                                          color: TriathlonColors.cycling,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            color: Colors.white,
-                            child: Padding(
-                              padding: const EdgeInsets.all(
-                                TriathlonDimens.paddingLarge,
+
+                            const SizedBox(
+                                height: TriathlonDimens.paddingLarge),
+
+                            // Titre exercices
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: TriathlonDimens.paddingSmall,
                               ),
-                              child: Column(
+                              child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Nom de la séance',
-                                    style: TextStyle(
-                                      color: TriathlonColors.cycling,
-                                      fontSize: TriathlonDimens.fontSizeXLarge,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                      height: TriathlonDimens.paddingMedium),
-                                  TextField(
-                                    controller: _nomSeanceController,
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      hintText: 'Ex: Séance intervalles FTP',
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          TriathlonDimens.borderRadiusMedium,
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Exercices de cyclisme',
+                                          style: TextStyle(
+                                            color: TriathlonColors.cycling,
+                                            fontSize:
+                                                TriathlonDimens.fontSizeXXLarge,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                        borderSide: BorderSide(
-                                          color: TriathlonColors.cycling,
-                                          width: TriathlonDimens.borderWidth,
+                                        const SizedBox(height: 4),
+                                        // Texte "x exercice(s)" sous le titre
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal:
+                                                TriathlonDimens.paddingSmall,
+                                            vertical:
+                                                TriathlonDimens.paddingSmall,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: TriathlonColors.cycling
+                                                .withOpacity(0.15),
+                                            borderRadius: BorderRadius.circular(
+                                              TriathlonDimens
+                                                  .borderRadiusMedium,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '${_listeExercices.length} exercice${_listeExercices.length > 1 ? 's' : ''}',
+                                            style: TextStyle(
+                                              color: TriathlonColors.cycling,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize:
+                                                  TriathlonDimens.fontSizeSmall,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                      prefixIcon: Icon(
-                                        Icons.title,
-                                        color: TriathlonColors.cycling,
-                                      ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
 
-                          const SizedBox(height: TriathlonDimens.paddingLarge),
+                            const SizedBox(
+                                height: TriathlonDimens.paddingMedium),
 
-                          // Titre exercices - CORRECTION ICI
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: TriathlonDimens.paddingSmall,
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Exercices de cyclisme',
-                                        style: TextStyle(
-                                          color: TriathlonColors.cycling,
-                                          fontSize:
-                                              TriathlonDimens.fontSizeXXLarge,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      // Texte "x exercice(s)" sous le titre
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal:
-                                              TriathlonDimens.paddingSmall,
-                                          vertical:
-                                              TriathlonDimens.paddingSmall,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: TriathlonColors.cycling
-                                              .withOpacity(0.15),
-                                          borderRadius: BorderRadius.circular(
-                                            TriathlonDimens.borderRadiusMedium,
-                                          ),
-                                        ),
-                                        child: Text(
-                                          '${_listeExercices.length} exercice${_listeExercices.length > 1 ? 's' : ''}',
-                                          style: TextStyle(
-                                            color: TriathlonColors.cycling,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize:
-                                                TriathlonDimens.fontSizeSmall,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                            // Liste des exercices
+                            AnimatedList(
+                              key: _listKey,
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              initialItemCount: _listeExercices.length,
+                              itemBuilder: (context, index, animation) {
+                                return SizeTransition(
+                                  sizeFactor: animation,
+                                  child: CyclingExerciceForm(
+                                    key: ValueKey(_listeExercices[index].id),
+                                    exercice: _listeExercices[index],
+                                    onCalculer: (exercice) {
+                                      setState(() {
+                                        _updateExerciceInList(exercice);
+                                      });
+                                    },
+                                    onSupprimer: () {
+                                      _supprimerExercice(index);
+                                    },
                                   ),
-                                ),
-                              ],
+                                );
+                              },
                             ),
-                          ),
 
-                          const SizedBox(height: TriathlonDimens.paddingMedium),
-
-                          // Liste des exercices
-                          AnimatedList(
-                            key: _listKey,
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            initialItemCount: _listeExercices.length,
-                            itemBuilder: (context, index, animation) {
-                              return SizeTransition(
-                                sizeFactor: animation,
-                                child: CyclingExerciceForm(
-                                  key: ValueKey(_listeExercices[index].id),
-                                  exercice: _listeExercices[index],
-                                  onCalculer: (exercice) {
-                                    setState(() {
-                                      _updateExerciceInList(exercice);
-                                    });
-                                  },
-                                  onSupprimer: () {
-                                    _supprimerExercice(index);
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-
-                          // Bouton Ajouter (version mobile pour ajouter plus facilement)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: TriathlonDimens.paddingLarge,
-                            ),
-                            child: SizedBox(
-                              width: double.infinity,
-                              height: TriathlonDimens.buttonHeight,
-                              child: ElevatedButton.icon(
-                                onPressed: _ajouterExercice,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: TriathlonColors.cycling,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      TriathlonDimens.borderRadiusXLarge,
+                            // Bouton Ajouter
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: TriathlonDimens.paddingLarge,
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: TriathlonDimens.buttonHeight,
+                                child: ElevatedButton.icon(
+                                  onPressed: _ajouterExercice,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: TriathlonColors.cycling,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(
+                                        TriathlonDimens.borderRadiusXLarge,
+                                      ),
                                     ),
+                                    elevation: TriathlonDimens.elevationMedium,
                                   ),
-                                  elevation: TriathlonDimens.elevationMedium,
-                                ),
-                                icon: const Icon(Icons.add, size: 24),
-                                label: const Text(
-                                  'AJOUTER UN EXERCICE',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                                  icon: const Icon(Icons.add, size: 24),
+                                  label: const Text(
+                                    'AJOUTER UN EXERCICE',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          ),
 
-                          const SizedBox(height: 100),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-                // Bouton Sauvegarder fixe
-                Container(
-                  padding: const EdgeInsets.all(TriathlonDimens.paddingLarge),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: TriathlonDimens.buttonHeight,
-                    child: ElevatedButton(
-                      onPressed: _sauvegarderSeance,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: TriathlonColors.cycling,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(
-                            TriathlonDimens.borderRadiusXLarge,
-                          ),
-                        ),
-                        elevation: TriathlonDimens.elevationXLarge,
-                      ),
-                      child: const Text(
-                        'SAUVEGARDER LA SÉANCE',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                            const SizedBox(
+                                height: 80), // Espace pour le bouton fixe
+                          ],
                         ),
                       ),
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: MediaQuery.of(context).viewPadding.bottom + 10,
-                ),
-              ],
+
+                  // Bouton Sauvegarder fixe
+                  Container(
+                    padding: const EdgeInsets.all(TriathlonDimens.paddingLarge),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: TriathlonDimens.buttonHeight,
+                      child: ElevatedButton(
+                        onPressed: _sauvegarderSeance,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: TriathlonColors.cycling,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              TriathlonDimens.borderRadiusXLarge,
+                            ),
+                          ),
+                          elevation: TriathlonDimens.elevationXLarge,
+                        ),
+                        child: const Text(
+                          'SAUVEGARDER LA SÉANCE',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -331,7 +336,8 @@ class _CyclingCreationSeanceScreenState
         nbSeries: 3,
         nbRepetitions: 1,
         valeurReference: 250.0, // FTP en watts
-        intensite: 80, // 80% FTP
+        intensiteMin: 85, // Zone 3 par défaut (85-95%)
+        intensite: 95,
         reposRepetitionsSec: 60,
         reposSeriesSec: 180,
         tempsMin: 0,

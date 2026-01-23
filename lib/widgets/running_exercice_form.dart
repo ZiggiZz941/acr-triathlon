@@ -29,13 +29,19 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
   final TextEditingController _seriesController = TextEditingController();
   final TextEditingController _repetitionsController = TextEditingController();
   final TextEditingController _vmaController = TextEditingController();
-  final TextEditingController _reposRepetitionsController =
-      TextEditingController();
-  final TextEditingController _reposSeriesController = TextEditingController();
+  final TextEditingController _reposRepetitionsMinController =
+      TextEditingController(); // NOUVEAU: minutes pour repos répétitions
+  final TextEditingController _reposRepetitionsSecController =
+      TextEditingController(); // NOUVEAU: secondes pour repos répétitions
+  final TextEditingController _reposSeriesMinController =
+      TextEditingController(); // NOUVEAU: minutes pour repos séries
+  final TextEditingController _reposSeriesSecController =
+      TextEditingController(); // NOUVEAU: secondes pour repos séries
 
-  int _selectedAllure = 2; // Allure 3 par défaut
+  int _selectedAllure =
+      2; // Allure 3 par défaut (index 2 correspond à allure 3)
   bool _showResult = false;
-  bool _useProfileVMA = false; // AJOUT: Pour utiliser la VMA du profil
+  bool _useProfileVMA = false;
   String _resultText = '';
 
   late AnimationController _animationController;
@@ -65,11 +71,14 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
     _repetitionsController.text = widget.exercice.nbRepetitions > 0
         ? widget.exercice.nbRepetitions.toString()
         : '1';
-    _reposRepetitionsController.text = widget.exercice.reposRepetitionsFormate;
-    _reposSeriesController.text = widget.exercice.reposSeriesFormate;
+
+    // Initialiser les nouveaux contrôleurs pour le temps
+    _initializeTimeControllers();
+
+    // Initialiser l'allure (convertir de 1-6 à 0-5 pour le Dropdown)
     _selectedAllure = (widget.exercice.allure ?? 3) - 1;
 
-    // Initialiser la VMA - sera remplie par didChangeDependencies
+    // Initialiser la VMA
     if (widget.exercice.valeurReference > 0) {
       _vmaController.text = widget.exercice.valeurReference.toStringAsFixed(1);
     }
@@ -80,13 +89,32 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
     }
   }
 
+  // NOUVELLE MÉTHODE: Initialiser les contrôleurs de temps
+  void _initializeTimeControllers() {
+    // Pour repos répétitions
+    int reposRepSec = widget.exercice.reposRepetitionsSec;
+    int reposRepMin = reposRepSec ~/ 60;
+    int reposRepSecRest = reposRepSec % 60;
+
+    _reposRepetitionsMinController.text = reposRepMin.toString();
+    _reposRepetitionsSecController.text =
+        reposRepSecRest.toString().padLeft(2, '0');
+
+    // Pour repos séries
+    int reposSerSec = widget.exercice.reposSeriesSec;
+    int reposSerMin = reposSerSec ~/ 60;
+    int reposSerSecRest = reposSerSec % 60;
+
+    _reposSeriesMinController.text = reposSerMin.toString();
+    _reposSeriesSecController.text = reposSerSecRest.toString().padLeft(2, '0');
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _loadProfileVMA();
   }
 
-  // AJOUT: Méthode pour charger la VMA du profil
   void _loadProfileVMA() {
     final dataManager = Provider.of<DataManager>(context, listen: false);
     final profile = dataManager.getTriathlonProfile();
@@ -94,14 +122,12 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
     if (profile.containsKey('running_vma')) {
       final vma = profile['running_vma'] as double?;
       if (vma != null) {
-        // Si le champ VMA est vide ou si on utilise déjà le profil
         if (_vmaController.text.isEmpty || _useProfileVMA) {
           setState(() {
             _vmaController.text = vma.toStringAsFixed(1);
             _useProfileVMA = true;
           });
 
-          // Mettre à jour l'exercice avec la VMA du profil
           if (mounted && _distanceController.text.isNotEmpty) {
             widget.exercice.valeurReference = vma;
             _updateExercice();
@@ -109,7 +135,6 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
         }
       }
     } else {
-      // Valeur par défaut si pas de profil
       if (_vmaController.text.isEmpty) {
         setState(() {
           _vmaController.text = '16.0';
@@ -127,8 +152,10 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
     _seriesController.dispose();
     _repetitionsController.dispose();
     _vmaController.dispose();
-    _reposRepetitionsController.dispose();
-    _reposSeriesController.dispose();
+    _reposRepetitionsMinController.dispose();
+    _reposRepetitionsSecController.dispose();
+    _reposSeriesMinController.dispose();
+    _reposSeriesSecController.dispose();
     super.dispose();
   }
 
@@ -355,8 +382,6 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
                             _useProfileVMA = value;
                             if (value) {
                               _loadProfileVMA();
-                            } else {
-                              // Garder la valeur actuelle
                             }
                           });
                         },
@@ -468,29 +493,37 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
 
             const SizedBox(height: TriathlonDimens.paddingMedium),
 
-            // Deux colonnes Repos
+            // Repos répétitions (Minutes/Secondes)
+            Text(
+              'Repos répétitions',
+              style: TextStyle(
+                color: sportColor,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 5),
             Row(
               children: [
-                // Repos répétitions
                 Expanded(
+                  flex: 2,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Repos répétitions',
+                        'Minutes',
                         style: TextStyle(
-                          color: sportColor,
-                          fontSize: 16,
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 5),
                       TextField(
-                        controller: _reposRepetitionsController,
+                        controller: _reposRepetitionsMinController,
+                        keyboardType: TextInputType.number,
                         onChanged: (_) => _updateExercice(),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          hintText: 'Ex: 0:45',
+                          hintText: 'Min',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               TriathlonDimens.borderRadiusMedium,
@@ -509,29 +542,138 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
                     ],
                   ),
                 ),
-
-                const SizedBox(width: TriathlonDimens.paddingMedium),
-
-                // Repos séries
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+                Text(
+                  ':',
+                  style: TextStyle(
+                    color: sportColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: TriathlonDimens.paddingSmall),
                 Expanded(
+                  flex: 2,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Repos séries',
+                        'Secondes',
                         style: TextStyle(
-                          color: sportColor,
-                          fontSize: 16,
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
                         ),
                       ),
-                      const SizedBox(height: 5),
                       TextField(
-                        controller: _reposSeriesController,
+                        controller: _reposRepetitionsSecController,
+                        keyboardType: TextInputType.number,
                         onChanged: (_) => _updateExercice(),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.white,
-                          hintText: 'Ex: 2:00',
+                          hintText: 'Sec',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              TriathlonDimens.borderRadiusMedium,
+                            ),
+                            borderSide: BorderSide(
+                              color: sportColor,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: TriathlonDimens.paddingMedium,
+                            vertical: TriathlonDimens.paddingMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: TriathlonDimens.paddingMedium),
+
+            // Repos séries (Minutes/Secondes)
+            Text(
+              'Repos séries',
+              style: TextStyle(
+                color: sportColor,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 5),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Minutes',
+                        style: TextStyle(
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      TextField(
+                        controller: _reposSeriesMinController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => _updateExercice(),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: 'Min',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(
+                              TriathlonDimens.borderRadiusMedium,
+                            ),
+                            borderSide: BorderSide(
+                              color: sportColor,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: TriathlonDimens.paddingMedium,
+                            vertical: TriathlonDimens.paddingMedium,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+                Text(
+                  ':',
+                  style: TextStyle(
+                    color: sportColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(width: TriathlonDimens.paddingSmall),
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Secondes',
+                        style: TextStyle(
+                          color: TriathlonColors.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      TextField(
+                        controller: _reposSeriesSecController,
+                        keyboardType: TextInputType.number,
+                        onChanged: (_) => _updateExercice(),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.white,
+                          hintText: 'Sec',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(
                               TriathlonDimens.borderRadiusMedium,
@@ -664,12 +806,16 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
       int series = int.parse(_seriesController.text);
       int repetitions = int.parse(_repetitionsController.text);
       double vma = double.parse(_vmaController.text.replaceAll(',', '.'));
-      int reposRepSec = TriathlonExercice.parseTempsEnSecondes(
-        _reposRepetitionsController.text,
-      );
-      int reposSerSec = TriathlonExercice.parseTempsEnSecondes(
-        _reposSeriesController.text,
-      );
+
+      // Parser les minutes et secondes pour repos répétitions
+      int reposRepMin = int.tryParse(_reposRepetitionsMinController.text) ?? 0;
+      int reposRepSec = int.tryParse(_reposRepetitionsSecController.text) ?? 0;
+      int reposRepTotalSec = (reposRepMin * 60) + reposRepSec;
+
+      // Parser les minutes et secondes pour repos séries
+      int reposSerMin = int.tryParse(_reposSeriesMinController.text) ?? 0;
+      int reposSerSec = int.tryParse(_reposSeriesSecController.text) ?? 0;
+      int reposSerTotalSec = (reposSerMin * 60) + reposSerSec;
 
       // Validations
       if (distance <= 0 || series <= 0 || vma <= 0) {
@@ -677,12 +823,14 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
       }
 
       if (repetitions <= 0) repetitions = 1;
-      if (reposRepSec < 0) reposRepSec = 0;
-      if (reposSerSec < 0) reposSerSec = 0;
+      if (reposRepTotalSec < 0) reposRepTotalSec = 0;
+      if (reposSerTotalSec < 0) reposSerTotalSec = 0;
 
       // Si une seule série, ignorer le repos entre séries
       if (series == 1) {
-        reposSerSec = 0;
+        reposSerTotalSec = 0;
+        _reposSeriesMinController.text = '0';
+        _reposSeriesSecController.text = '00';
       }
 
       int allure = _selectedAllure + 1;
@@ -694,8 +842,8 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
       widget.exercice.nbRepetitions = repetitions;
       widget.exercice.valeurReference = vma;
       widget.exercice.allure = allure;
-      widget.exercice.reposRepetitionsSec = reposRepSec;
-      widget.exercice.reposSeriesSec = reposSerSec;
+      widget.exercice.reposRepetitionsSec = reposRepTotalSec;
+      widget.exercice.reposSeriesSec = reposSerTotalSec;
 
       // Recalculer les temps
       widget.exercice.calculerTemps();

@@ -336,7 +336,7 @@ class _CreationSeanceScreenState extends State<CreationSeanceScreen> {
       nbSeries: 1,
       nbRepetitions: 1,
       valeurReference: 0,
-      intensite: 3, // Allure 3 par défaut
+      allure: 3, // Allure 3 par défaut
       reposRepetitionsSec: 45,
       reposSeriesSec: 120,
     );
