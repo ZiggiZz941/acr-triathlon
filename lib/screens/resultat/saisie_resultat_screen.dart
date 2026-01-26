@@ -47,22 +47,20 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
   Future<void> _chargerDonneesExistantes() async {
     final dataManager = Provider.of<DataManager>(context, listen: false);
 
-    // Charger les résultats existants
     final resultatsExistants =
         dataManager.getResultatsForSeance(widget.seance.id);
 
-    // Stocker les résultats existants dans un map pour un accès facile
     for (var resultat in resultatsExistants) {
       final key =
           '${resultat.exerciceId}_${resultat.serieIndex}_${resultat.repetitionIndex}';
       _resultatsExistant[key] = {
         'id': resultat.id,
         'tempsReel': resultat.tempsReel,
-        'tempsAttendu': resultat.tempsAttendu,
+        'tempsAttenduMin': resultat.tempsAttenduMin,
+        'tempsAttenduMax': resultat.tempsAttenduMax,
       };
     }
 
-    // Charger le commentaire de séance existant
     final commentaireSeance =
         dataManager.getCommentaireForSeance(widget.seance.id);
     _commentaireExistant = commentaireSeance?.commentaire;
@@ -78,12 +76,14 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
         final resultatExistant = _resultatsExistant[key];
 
         double? tempsSaisi;
-        double? tempsAttendu;
+        double? tempsAttenduMin;
+        double? tempsAttenduMax;
         int? resultatId;
 
         if (resultatExistant != null) {
           tempsSaisi = resultatExistant['tempsReel'] as double?;
-          tempsAttendu = resultatExistant['tempsAttendu'] as double?;
+          tempsAttenduMin = resultatExistant['tempsAttenduMin'] as double?;
+          tempsAttenduMax = resultatExistant['tempsAttenduMax'] as double?;
           resultatId = resultatExistant['id'] as int?;
         }
 
@@ -91,10 +91,9 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
           exerciceId: exercice.id,
           serieIndex: item['serie'],
           repetitionIndex: item['repetition'],
-          tempsMinAttendu: item['attendus']['tempsMin'],
-          tempsMaxAttendu: item['attendus']['tempsMax'],
+          tempsAttenduMin: tempsAttenduMin ?? item['attendus']['tempsMin'],
+          tempsAttenduMax: tempsAttenduMax ?? item['attendus']['tempsMax'],
           tempsSaisi: tempsSaisi,
-          tempsAttendu: tempsAttendu ?? item['attendus']['tempsMin'],
           resultatId: resultatId,
         );
       }).toList();
@@ -104,7 +103,6 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
         cases: cases,
       ));
 
-      // Initialiser les controllers avec les valeurs existantes
       for (var caseResultat in cases) {
         final key =
             '${caseResultat.exerciceId}_${caseResultat.serieIndex}_${caseResultat.repetitionIndex}';
@@ -168,12 +166,10 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
 
     return Stack(
       children: [
-        // Contenu principal avec SingleChildScrollView
         SingleChildScrollView(
           padding: const EdgeInsets.only(bottom: 100),
           child: Column(
             children: [
-              // En-tête fixe
               Container(
                 color: Colors.white,
                 padding: const EdgeInsets.all(16),
@@ -213,22 +209,14 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
                   ],
                 ),
               ),
-
-              // Liste des exercices
               ..._exercicesSaisie
                   .map((exerciceSaisie) => _buildExerciceCard(exerciceSaisie))
                   .toList(),
-
-              // Zone de commentaire
               _buildCommentaireSection(),
-
-              // Espace supplémentaire en bas pour le bouton
               const SizedBox(height: 100),
             ],
           ),
         ),
-
-        // Bouton de sauvegarde fixé en bas
         Positioned(
           left: 0,
           right: 0,
@@ -249,7 +237,6 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Titre de l'exercice
             Row(
               children: [
                 Icon(
@@ -276,8 +263,6 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Grille des cases avec GridView.builder
             LayoutBuilder(
               builder: (context, constraints) {
                 final crossAxisCount = constraints.maxWidth > 600 ? 4 : 3;
@@ -439,6 +424,20 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
   Widget _buildCaseResultat(
       CaseResultat caseResultat, TextEditingController controller) {
     final estRempli = caseResultat.tempsSaisi != null;
+    final tempsAttenduMin = caseResultat.tempsAttenduMin;
+    final tempsAttenduMax = caseResultat.tempsAttenduMax;
+
+    String texteAttendu;
+    Color couleurAttendu;
+
+    if (tempsAttenduMin == tempsAttenduMax) {
+      texteAttendu = 'Attendu: ${_formatTemps(tempsAttenduMin)}';
+      couleurAttendu = Colors.blue;
+    } else {
+      texteAttendu =
+          'Attendu: ${_formatTemps(tempsAttenduMin)}-${_formatTemps(tempsAttenduMax)}';
+      couleurAttendu = Colors.green;
+    }
 
     return GestureDetector(
       onTap: () => _ouvrirSaisieDetaillee(caseResultat, controller),
@@ -480,17 +479,16 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
                 color: estRempli ? Colors.green : TriathlonColors.textSecondary,
               ),
             ),
-            if (caseResultat.tempsAttendu > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  'Attendu: ${_formatTemps(caseResultat.tempsAttendu)}',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: TriathlonColors.textSecondary,
-                  ),
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                texteAttendu,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: couleurAttendu,
                 ),
               ),
+            ),
           ],
         ),
       ),
@@ -530,32 +528,53 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
                   },
                 ),
                 const SizedBox(height: 16),
-                if (caseResultat.tempsAttendu > 0)
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          '📊 Temps de référence',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue.shade800,
-                          ),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(
+                        '📊 Temps de référence',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blue.shade800,
                         ),
-                        const SizedBox(height: 4),
+                      ),
+                      const SizedBox(height: 4),
+                      if (caseResultat.tempsAttenduMin ==
+                          caseResultat.tempsAttenduMax)
                         Text(
-                          'Attendu: ${_formatTemps(caseResultat.tempsAttendu)}',
+                          'Attendu: ${_formatTemps(caseResultat.tempsAttenduMin)}',
                           style: TextStyle(
                             color: Colors.blue.shade700,
                           ),
+                        )
+                      else
+                        Column(
+                          children: [
+                            Text(
+                              'Plage: ${_formatTemps(caseResultat.tempsAttenduMin)} à ${_formatTemps(caseResultat.tempsAttenduMax)}',
+                              style: TextStyle(
+                                color: Colors.blue.shade700,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Idéal: Dans cette plage',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.blue.shade600,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                    ],
                   ),
+                ),
                 const SizedBox(height: 16),
                 Wrap(
                   spacing: 8,
@@ -564,8 +583,8 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
                     _buildBoutonTempsRapide('8:30', caseResultat, controller),
                     _buildBoutonTempsRapide('9:00', caseResultat, controller),
                     _buildBoutonTempsRapide(
-                        caseResultat.tempsAttendu > 0
-                            ? _formatTemps(caseResultat.tempsAttendu)
+                        caseResultat.tempsAttenduMin > 0
+                            ? _formatTemps(caseResultat.tempsAttenduMin)
                             : '8:30',
                         caseResultat,
                         controller),
@@ -691,8 +710,8 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
             serieIndex: caseResultat.serieIndex,
             repetitionIndex: caseResultat.repetitionIndex,
             tempsReel: caseResultat.tempsSaisi!,
-            tempsAttendu: caseResultat.tempsAttendu,
-            // IMPORTANT: Plus de commentaire dans les résultats individuels
+            tempsAttenduMin: caseResultat.tempsAttenduMin,
+            tempsAttenduMax: caseResultat.tempsAttenduMax,
             dateRealisation: DateTime.now(),
             estComplete: true,
           );
@@ -702,7 +721,6 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
       }
     }
 
-    // Utiliser la nouvelle méthode qui sauvegarde résultats et commentaire
     await dataManager.saveResultatsWithCommentaire(
       widget.seance.id,
       nouveauxResultats,
@@ -727,7 +745,6 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
   }
 }
 
-// Classes d'aide
 class ExerciceSaisie {
   final TriathlonExercice exercice;
   final List<CaseResultat> cases;
@@ -742,20 +759,18 @@ class CaseResultat {
   final int exerciceId;
   final int serieIndex;
   final int repetitionIndex;
-  final double tempsMinAttendu;
-  final double tempsMaxAttendu;
+  final double tempsAttenduMin;
+  final double tempsAttenduMax;
   double? tempsSaisi;
-  double tempsAttendu;
   int? resultatId;
 
   CaseResultat({
     required this.exerciceId,
     required this.serieIndex,
     required this.repetitionIndex,
-    required this.tempsMinAttendu,
-    required this.tempsMaxAttendu,
+    required this.tempsAttenduMin,
+    required this.tempsAttenduMax,
     this.tempsSaisi,
-    required this.tempsAttendu,
     this.resultatId,
   });
 }

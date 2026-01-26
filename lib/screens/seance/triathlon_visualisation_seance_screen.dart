@@ -133,12 +133,39 @@ class TriathlonVisualisationSeanceScreen extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(
                               top: TriathlonDimens.paddingSmall),
-                          child: Text(
-                            'Temps: ${exercice.formatTemps(exercice.tempsMin)}',
-                            style: TextStyle(
-                              color: TriathlonColors.textSecondary,
-                              fontSize: TriathlonDimens.fontSizeSmall,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (exercice.tempsMin == exercice.tempsMax)
+                                Text(
+                                  'Temps: ${exercice.formatTemps(exercice.tempsMin)}',
+                                  style: TextStyle(
+                                    color: TriathlonColors.textSecondary,
+                                    fontSize: TriathlonDimens.fontSizeSmall,
+                                  ),
+                                )
+                              else
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Plage de temps:',
+                                      style: TextStyle(
+                                        color: TriathlonColors.textSecondary,
+                                        fontSize: TriathlonDimens.fontSizeSmall,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${exercice.formatTemps(exercice.tempsMin)} à ${exercice.formatTemps(exercice.tempsMax)}',
+                                      style: TextStyle(
+                                        color: sportColor,
+                                        fontSize: TriathlonDimens.fontSizeSmall,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                            ],
                           ),
                         ),
                     ],

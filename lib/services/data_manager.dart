@@ -116,6 +116,24 @@ class DataManager extends ChangeNotifier {
     }
   }
 
+  Future<void> migrateOldResults() async {
+    try {
+      for (var entry in _resultats.entries) {
+        for (var resultat in entry.value) {
+          // Si le résultat a seulement tempsAttendu (ancien format)
+          if (resultat.tempsAttenduMin == resultat.tempsAttenduMax &&
+              resultat.tempsAttenduMin == 60.0) {
+            // Vérifier si on a un tempsAttendu stocké autrement
+            // Cette logique dépend de votre implémentation
+          }
+        }
+      }
+      await _saveData();
+    } catch (e) {
+      print("Erreur migration résultats: $e");
+    }
+  }
+
   // NOUVELLE MÉTHODE : Sauvegarder les résultats et commentaire en une fois
   Future<void> saveResultatsWithCommentaire(
       int seanceId, List<TriathlonResultat> resultats,

@@ -117,6 +117,12 @@ class TriathlonExercice {
         _calculerTempsCycling();
         break;
     }
+
+    // S'assurer que si c'est un temps unique, les deux sont égaux
+    if (intensite != null && intensiteMin == null) {
+      // Si intensité unique, pas de plage
+      tempsMax = tempsMin;
+    }
   }
 
   void _calculerTempsRunning() {

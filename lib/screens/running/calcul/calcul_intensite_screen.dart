@@ -11,9 +11,14 @@ class CalculIntensiteScreen extends StatefulWidget {
 
 class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
     with SingleTickerProviderStateMixin {
-  final TextEditingController _tempsController = TextEditingController();
+  // Contrôleurs pour les champs séparés
+  final TextEditingController _minutesController = TextEditingController();
+  final TextEditingController _secondesController = TextEditingController();
+  final TextEditingController _centiemesController = TextEditingController();
+
   final TextEditingController _distanceController = TextEditingController();
   final TextEditingController _intensiteController = TextEditingController();
+
   String _resultText = '--:--.--';
   bool _showResult = false;
 
@@ -23,6 +28,12 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
   @override
   void initState() {
     super.initState();
+
+    // Initialiser avec des valeurs par défaut
+    _minutesController.text = '0';
+    _secondesController.text = '00';
+    _centiemesController.text = '00';
+
     _animationController = AnimationController(
       duration: TriathlonDimens.animationDurationSlow,
       vsync: this,
@@ -48,7 +59,9 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
   @override
   void dispose() {
     _animationController.dispose();
-    _tempsController.dispose();
+    _minutesController.dispose();
+    _secondesController.dispose();
+    _centiemesController.dispose();
     _distanceController.dispose();
     _intensiteController.dispose();
     super.dispose();
@@ -131,7 +144,7 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Temps
+                          // Temps de référence (nouveau format avec 3 champs)
                           Text(
                             'Temps de référence',
                             style: TextStyle(
@@ -141,24 +154,191 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
                             ),
                           ),
                           const SizedBox(height: TriathlonDimens.paddingSmall),
-                          TextField(
-                            controller: _tempsController,
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white,
-                              hintText: 'Ex: 12.50 ou 1:12.50',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                  TriathlonDimens.borderRadiusMedium,
-                                ),
-                                borderSide: BorderSide(
-                                  color: TriathlonColors.running,
-                                  width: TriathlonDimens.borderWidth,
+                          Row(
+                            children: [
+                              // Minutes
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Minutes',
+                                      style: TextStyle(
+                                        color: TriathlonColors.textSecondary,
+                                        fontSize: TriathlonDimens.fontSizeSmall,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    TextField(
+                                      controller: _minutesController,
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      onChanged: (value) {
+                                        _validerEtCorrigerMinutes();
+                                      },
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        hintText: '0',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            TriathlonDimens.borderRadiusMedium,
+                                          ),
+                                          borderSide: BorderSide(
+                                            color: TriathlonColors.running,
+                                            width: TriathlonDimens.borderWidth,
+                                          ),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal:
+                                              TriathlonDimens.paddingSmall,
+                                          vertical:
+                                              TriathlonDimens.paddingMedium,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: TriathlonDimens.paddingMedium,
-                                vertical: TriathlonDimens.paddingMedium,
+
+                              // Séparateur :
+                              Container(
+                                alignment: Alignment.bottomCenter,
+                                height: 72,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    ':',
+                                    style: TextStyle(
+                                      color: TriathlonColors.running,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // Secondes
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Secondes',
+                                      style: TextStyle(
+                                        color: TriathlonColors.textSecondary,
+                                        fontSize: TriathlonDimens.fontSizeSmall,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    TextField(
+                                      controller: _secondesController,
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      onChanged: (value) {
+                                        _validerEtCorrigerSecondes();
+                                      },
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        hintText: '00',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            TriathlonDimens.borderRadiusMedium,
+                                          ),
+                                          borderSide: BorderSide(
+                                            color: TriathlonColors.running,
+                                            width: TriathlonDimens.borderWidth,
+                                          ),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal:
+                                              TriathlonDimens.paddingSmall,
+                                          vertical:
+                                              TriathlonDimens.paddingMedium,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Séparateur .
+                              Container(
+                                alignment: Alignment.bottomCenter,
+                                height: 72,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text(
+                                    '.',
+                                    style: TextStyle(
+                                      color: TriathlonColors.running,
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              // Centièmes
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Centièmes',
+                                      style: TextStyle(
+                                        color: TriathlonColors.textSecondary,
+                                        fontSize: TriathlonDimens.fontSizeSmall,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    TextField(
+                                      controller: _centiemesController,
+                                      keyboardType: TextInputType.number,
+                                      textAlign: TextAlign.center,
+                                      onChanged: (value) {
+                                        _validerEtCorrigerCentiemes();
+                                      },
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: Colors.white,
+                                        hintText: '00',
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            TriathlonDimens.borderRadiusMedium,
+                                          ),
+                                          borderSide: BorderSide(
+                                            color: TriathlonColors.running,
+                                            width: TriathlonDimens.borderWidth,
+                                          ),
+                                        ),
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                          horizontal:
+                                              TriathlonDimens.paddingSmall,
+                                          vertical:
+                                              TriathlonDimens.paddingMedium,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          // Information sur le format
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8, left: 4),
+                            child: Text(
+                              'Format: minutes:secondes.centièmes (ex: 1:30.50)',
+                              style: TextStyle(
+                                color: TriathlonColors.textSecondary,
+                                fontSize: TriathlonDimens.fontSizeSmall,
+                                fontStyle: FontStyle.italic,
                               ),
                             ),
                           ),
@@ -305,7 +485,9 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
                                 scale: _scaleAnimation,
                                 child: Container(
                                   width: double.infinity,
-                                  height: 120,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 20,
+                                  ),
                                   decoration: BoxDecoration(
                                     border: Border.all(
                                       color: TriathlonColors.running,
@@ -315,19 +497,51 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
                                       TriathlonDimens.borderRadiusMedium,
                                     ),
                                   ),
-                                  child: Center(
-                                    child: Text(
-                                      _resultText,
-                                      style: TextStyle(
-                                        color: TriathlonColors.running,
-                                        fontSize:
-                                            TriathlonDimens.fontSizeXXXLarge,
-                                        fontWeight: FontWeight.bold,
+                                  child: Column(
+                                    children: [
+                                      // Affichage principal du résultat
+                                      Text(
+                                        _resultText,
+                                        style: TextStyle(
+                                          color: TriathlonColors.running,
+                                          fontSize:
+                                              TriathlonDimens.fontSizeXXXLarge,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
-                                    ),
+                                      const SizedBox(height: 10),
+
+                                      // Affichage en secondes avec centièmes
+                                      if (_showResult &&
+                                          _resultText != '--:--.--')
+                                        Text(
+                                          '(${_getResultEnSecondes()} secondes)',
+                                          style: TextStyle(
+                                            color:
+                                                TriathlonColors.textSecondary,
+                                            fontSize:
+                                                TriathlonDimens.fontSizeMedium,
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ),
+
+                              // Information sur le calcul
+                              if (_showResult && _resultText != '--:--.--')
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 16),
+                                  child: Text(
+                                    'Temps obtenu à ${_intensiteController.text}% de l\'intensité de référence',
+                                    style: TextStyle(
+                                      color: TriathlonColors.textSecondary,
+                                      fontSize: TriathlonDimens.fontSizeSmall,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
                             ],
                           ),
                         ),
@@ -366,8 +580,7 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
                     ),
                   ),
                   SizedBox(
-                    height: MediaQuery.of(context).viewPadding.bottom +
-                        10, // ← IMPORTANT
+                    height: MediaQuery.of(context).viewPadding.bottom + 10,
                   ),
                 ],
               ),
@@ -378,14 +591,95 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
     );
   }
 
+  // Méthodes de validation et correction automatique
+  void _validerEtCorrigerMinutes() {
+    try {
+      int minutes = int.tryParse(_minutesController.text) ?? 0;
+      if (minutes < 0) {
+        _minutesController.text = '0';
+      } else if (minutes > 59) {
+        _minutesController.text = '59';
+      }
+    } catch (e) {
+      _minutesController.text = '0';
+    }
+  }
+
+  void _validerEtCorrigerSecondes() {
+    try {
+      int secondes = int.tryParse(_secondesController.text) ?? 0;
+
+      // Si secondes >= 60, ajuster les minutes
+      if (secondes >= 60) {
+        int minutes = int.tryParse(_minutesController.text) ?? 0;
+        int newMinutes = minutes + (secondes ~/ 60);
+        secondes = secondes % 60;
+
+        setState(() {
+          _minutesController.text = newMinutes.toString();
+          _secondesController.text = secondes.toString().padLeft(2, '0');
+        });
+      } else if (secondes < 0) {
+        _secondesController.text = '00';
+      } else if (secondes < 10 && _secondesController.text.length == 1) {
+        // Formatage à 2 chiffres
+        _secondesController.text = '0$secondes';
+      }
+    } catch (e) {
+      _secondesController.text = '00';
+    }
+  }
+
+  void _validerEtCorrigerCentiemes() {
+    try {
+      int centiemes = int.tryParse(_centiemesController.text) ?? 0;
+
+      // Si centièmes >= 100, ajuster les secondes
+      if (centiemes >= 100) {
+        int secondes = int.tryParse(_secondesController.text) ?? 0;
+        int minutes = int.tryParse(_minutesController.text) ?? 0;
+
+        secondes += centiemes ~/ 100;
+        centiemes = centiemes % 100;
+
+        // Si secondes >= 60 après ajustement, ajuster les minutes
+        if (secondes >= 60) {
+          minutes += secondes ~/ 60;
+          secondes = secondes % 60;
+          setState(() {
+            _minutesController.text = minutes.toString();
+          });
+        }
+
+        setState(() {
+          _secondesController.text = secondes.toString().padLeft(2, '0');
+          _centiemesController.text = centiemes.toString().padLeft(2, '0');
+        });
+      } else if (centiemes < 0) {
+        _centiemesController.text = '00';
+      } else if (centiemes < 10 && _centiemesController.text.length == 1) {
+        // Formatage à 2 chiffres
+        _centiemesController.text = '0$centiemes';
+      }
+    } catch (e) {
+      _centiemesController.text = '00';
+    }
+  }
+
   void _calculer() {
     // Récupérer les valeurs
-    String tempsStr = _tempsController.text.trim();
+    String minutesStr = _minutesController.text.trim();
+    String secondesStr = _secondesController.text.trim();
+    String centiemesStr = _centiemesController.text.trim();
     String distanceStr = _distanceController.text.trim();
     String intensiteStr = _intensiteController.text.trim();
 
     // Validation
-    if (tempsStr.isEmpty || distanceStr.isEmpty || intensiteStr.isEmpty) {
+    if (minutesStr.isEmpty ||
+        secondesStr.isEmpty ||
+        centiemesStr.isEmpty ||
+        distanceStr.isEmpty ||
+        intensiteStr.isEmpty) {
       _showError('Veuillez remplir tous les champs');
       return;
     }
@@ -404,10 +698,17 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
       return;
     }
 
-    // Convertir le temps (format mm:ss.xx ou ss.xx)
-    double tempsSecondes = _convertirTempsEnSecondes(tempsStr);
-    if (tempsSecondes < 0) {
-      _showError('Format de temps invalide. Utilisez mm:ss.xx ou ss.xx');
+    if (distance <= 0) {
+      _showError('La distance doit être positive');
+      return;
+    }
+
+    // Convertir le temps en secondes
+    double? tempsSecondes =
+        _convertirTempsEnSecondes(minutesStr, secondesStr, centiemesStr);
+
+    if (tempsSecondes == null || tempsSecondes <= 0) {
+      _showError('Temps de référence invalide');
       return;
     }
 
@@ -430,28 +731,29 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
     _animationController.forward();
   }
 
-  double _convertirTempsEnSecondes(String tempsStr) {
+  double? _convertirTempsEnSecondes(
+      String minutes, String secondes, String centiemes) {
     try {
-      // Si le temps contient ':' (format mm:ss.xx)
-      if (tempsStr.contains(":")) {
-        List<String> parties = tempsStr.split(":");
-        if (parties.length == 2) {
-          double minutes = _parseDouble(parties[0]) ?? 0;
-          double secondes = _parseDouble(parties[1]) ?? 0;
-          if (minutes < 0 || secondes < 0 || secondes >= 60) {
-            return -1;
-          }
-          return (minutes * 60) + secondes;
-        }
+      int minutesInt = int.tryParse(minutes) ?? 0;
+      int secondesInt = int.tryParse(secondes) ?? 0;
+      int centiemesInt = int.tryParse(centiemes) ?? 0;
+
+      // Validation des plages
+      if (minutesInt < 0 ||
+          secondesInt < 0 ||
+          secondesInt >= 60 ||
+          centiemesInt < 0 ||
+          centiemesInt >= 100) {
+        return null;
       }
-      // Sinon, c'est en secondes (format ss.xx)
-      double secondes = _parseDouble(tempsStr) ?? 0;
-      if (secondes < 0) {
-        return -1;
-      }
-      return secondes;
+
+      // Calcul du temps total en secondes
+      double totalSecondes =
+          (minutesInt * 60) + secondesInt + (centiemesInt / 100.0);
+
+      return totalSecondes > 0 ? totalSecondes : null;
     } catch (e) {
-      return -1; // Erreur
+      return null;
     }
   }
 
@@ -473,6 +775,30 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
     }
   }
 
+  // Méthode pour obtenir le résultat en secondes
+  String _getResultEnSecondes() {
+    if (_resultText == '--:--.--') return '0.00';
+
+    try {
+      if (_resultText.contains(':')) {
+        List<String> parties = _resultText.split(':');
+        if (parties.length == 2) {
+          int minutes = int.tryParse(parties[0]) ?? 0;
+          double secondes = double.tryParse(parties[1]) ?? 0;
+          double total = (minutes * 60) + secondes;
+          return total.toStringAsFixed(2);
+        }
+      } else if (_resultText.contains('sec')) {
+        String secStr = _resultText.replaceAll(' sec', '');
+        return double.tryParse(secStr)?.toStringAsFixed(2) ?? '0.00';
+      }
+    } catch (e) {
+      return '0.00';
+    }
+
+    return '0.00';
+  }
+
   double? _parseDouble(String value) {
     if (value.trim().isEmpty) {
       return null;
@@ -491,6 +817,7 @@ class _CalculIntensiteScreenState extends State<CalculIntensiteScreen>
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
       ),
     );
   }

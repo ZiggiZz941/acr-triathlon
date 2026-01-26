@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -10,7 +9,8 @@ class TriathlonResultat {
   int serieIndex;
   int repetitionIndex;
   double? tempsReel;
-  double tempsAttendu;
+  double tempsAttenduMin; // NOUVEAU: temps attendu minimum
+  double tempsAttenduMax; // NOUVEAU: temps attendu maximum
   double? distanceReelle;
   int? fcMoyenne;
   int? fcMax;
@@ -27,7 +27,8 @@ class TriathlonResultat {
     required this.serieIndex,
     required this.repetitionIndex,
     this.tempsReel,
-    required this.tempsAttendu,
+    required this.tempsAttenduMin,
+    required this.tempsAttenduMax,
     this.distanceReelle,
     this.fcMoyenne,
     this.fcMax,
@@ -46,7 +47,12 @@ class TriathlonResultat {
       serieIndex: json['serieIndex'] ?? 1,
       repetitionIndex: json['repetitionIndex'] ?? 1,
       tempsReel: json['tempsReel']?.toDouble(),
-      tempsAttendu: (json['tempsAttendu'] as num?)?.toDouble() ?? 60.0,
+      tempsAttenduMin: (json['tempsAttenduMin'] as num?)?.toDouble() ??
+          (json['tempsAttendu'] as num?)?.toDouble() ??
+          60.0,
+      tempsAttenduMax: (json['tempsAttenduMax'] as num?)?.toDouble() ??
+          (json['tempsAttendu'] as num?)?.toDouble() ??
+          60.0,
       distanceReelle: json['distanceReelle']?.toDouble(),
       fcMoyenne: json['fcMoyenne'],
       fcMax: json['fcMax'],
@@ -70,7 +76,8 @@ class TriathlonResultat {
       'serieIndex': serieIndex,
       'repetitionIndex': repetitionIndex,
       'tempsReel': tempsReel,
-      'tempsAttendu': tempsAttendu,
+      'tempsAttenduMin': tempsAttenduMin,
+      'tempsAttenduMax': tempsAttenduMax,
       'distanceReelle': distanceReelle,
       'fcMoyenne': fcMoyenne,
       'fcMax': fcMax,
@@ -89,39 +96,85 @@ class TriathlonResultat {
     return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
   }
 
+  String get plageAttendueFormatee {
+    final minStr = _formatTemps(tempsAttenduMin);
+    final maxStr = _formatTemps(tempsAttenduMax);
+
+    if (tempsAttenduMin == tempsAttenduMax) {
+      return minStr;
+    }
+    return '$minStr à $maxStr';
+  }
+
+  String get tempsAttenduMinFormate => _formatTemps(tempsAttenduMin);
+  String get tempsAttenduMaxFormate => _formatTemps(tempsAttenduMax);
+
   String get dateFormatee {
     return DateFormat('dd/MM/yy HH:mm').format(dateRealisation);
   }
 
-  double get pourcentagePerformance {
-    if (tempsReel == null || tempsReel! <= 0 || tempsAttendu <= 0) return 0;
+  String get statutPerformance {
+    if (tempsReel == null) return 'Non mesuré';
 
-    return (tempsAttendu / tempsReel!) * 100;
+    if (tempsReel! <= tempsAttenduMin) {
+      return 'Très rapide';
+    } else if (tempsReel! <= tempsAttenduMax) {
+      return 'Dans les temps';
+    } else {
+      return 'Trop lent';
+    }
+  }
+
+  IconData get iconePerformance {
+    if (tempsReel == null) return Icons.timer;
+
+    if (tempsReel! <= tempsAttenduMin) {
+      return Icons.rocket_launch;
+    } else if (tempsReel! <= tempsAttenduMax) {
+      return Icons.check_circle;
+    } else {
+      return Icons.warning;
+    }
+  }
+
+  Color get couleurPerformance {
+    if (tempsReel == null) return Colors.grey;
+
+    if (tempsReel! <= tempsAttenduMin) {
+      return Colors.blue;
+    } else if (tempsReel! <= tempsAttenduMax) {
+      return Colors.green;
+    } else {
+      return Colors.red;
+    }
+  }
+
+  double get pourcentagePerformance {
+    if (tempsReel == null || tempsAttenduMin <= 0) return 0;
+
+    if (tempsReel! <= tempsAttenduMin) {
+      return (tempsAttenduMin / tempsReel! * 100).clamp(100, 150).toDouble();
+    } else if (tempsReel! <= tempsAttenduMax) {
+      return 95 +
+          ((tempsAttenduMax - tempsReel!) /
+              (tempsAttenduMax - tempsAttenduMin) *
+              5);
+    } else {
+      return 95 - ((tempsReel! - tempsAttenduMax) / tempsAttenduMax * 15);
+    }
+  }
+
+  String _formatTemps(double seconds) {
+    int minutes = (seconds ~/ 60).toInt();
+    int secs = (seconds % 60).toInt();
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }
 
   double get differenceTemps {
     if (tempsReel == null) return 0;
-    return tempsReel! - tempsAttendu;
+    double milieuPlage = (tempsAttenduMin + tempsAttenduMax) / 2;
+    return tempsReel! - milieuPlage;
   }
 
-  String get statutPerformance {
-    final pourcentage = pourcentagePerformance;
-    if (pourcentage >= 110) return 'Très rapide';
-    if (pourcentage >= 95) return 'Dans les temps';
-    return 'Trop lent';
-  }
-
-  Color get couleurPerformance {
-    final pourcentage = pourcentagePerformance;
-    if (pourcentage >= 110) return Colors.blue;
-    if (pourcentage >= 95) return Colors.green;
-    return Colors.red;
-  }
-
-  IconData get iconePerformance {
-    final pourcentage = pourcentagePerformance;
-    if (pourcentage >= 110) return Icons.rocket_launch;
-    if (pourcentage >= 95) return Icons.check_circle;
-    return Icons.warning;
-  }
+  double get tempsAttendu => tempsAttenduMin;
 }

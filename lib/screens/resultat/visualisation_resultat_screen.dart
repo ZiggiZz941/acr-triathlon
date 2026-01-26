@@ -56,7 +56,6 @@ class VisualisationResultatScreen extends StatelessWidget {
 
   Widget _buildAvecResultats(List<TriathlonResultat> resultats,
       TriathlonSeanceCommentaire? commentaireSeance, Color sportColor) {
-    // Filtrer uniquement les résultats avec temps
     final resultatsAvecTemps =
         resultats.where((r) => r.tempsReel != null).toList();
 
@@ -64,19 +63,26 @@ class VisualisationResultatScreen extends StatelessWidget {
       return _buildAucunResultat();
     }
 
-    // Calculer le nombre total attendu de répétitions
     final totalAttendu = seance.exercices.fold(
         0, (sum, exercice) => sum + exercice.nbSeries * exercice.nbRepetitions);
     final pourcentageComplete = totalAttendu > 0
         ? ((resultatsAvecTemps.length / totalAttendu) * 100).toInt()
         : 0;
 
+    // Calculer le pourcentage moyen de performance
+    double pourcentagePerformanceMoyen = 0;
+    if (resultatsAvecTemps.isNotEmpty) {
+      final totalPourcentage = resultatsAvecTemps.fold(
+          0.0, (sum, resultat) => sum + resultat.pourcentagePerformance);
+      pourcentagePerformanceMoyen =
+          totalPourcentage / resultatsAvecTemps.length;
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(TriathlonDimens.paddingLarge),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Titre et statistiques
           Card(
             elevation: 4,
             child: Padding(
@@ -100,8 +106,6 @@ class VisualisationResultatScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Statistiques globales
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -119,22 +123,24 @@ class VisualisationResultatScreen extends StatelessWidget {
                             ? Colors.green
                             : Colors.orange,
                       ),
+                      // NOUVEAU: Carte pour le pourcentage moyen de performance
+                      _buildStatCard(
+                        'Performance',
+                        '${pourcentagePerformanceMoyen.toStringAsFixed(0)}%',
+                        Icons.trending_up,
+                        _getPerformanceColor(pourcentagePerformanceMoyen),
+                      ),
                     ],
                   ),
                 ],
               ),
             ),
           ),
-
           const SizedBox(height: 20),
-
-          // Commentaire de la séance (si présent)
           if (commentaireSeance != null) ...[
             _buildCommentaireSection(commentaireSeance),
             const SizedBox(height: 20),
           ],
-
-          // Grille des résultats avec icônes
           Card(
             elevation: 4,
             child: Padding(
@@ -150,12 +156,8 @@ class VisualisationResultatScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-
-                  // Légende
                   _buildLegende(),
                   const SizedBox(height: 16),
-
-                  // Grille des résultats
                   Container(
                     constraints: BoxConstraints(
                       maxHeight: 400,
@@ -181,10 +183,7 @@ class VisualisationResultatScreen extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 20),
-
-          // Liste détaillée
           Card(
             elevation: 4,
             child: Padding(
@@ -291,7 +290,7 @@ class VisualisationResultatScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Performance vs temps attendu :',
+            'Performance par rapport à la plage :',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
@@ -304,7 +303,7 @@ class VisualisationResultatScreen extends StatelessWidget {
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
-                  '≥110% : Très rapide (plus de 10% plus rapide)',
+                  'Plus rapide que le temps minimum',
                   style: TextStyle(fontSize: 12),
                 ),
               ),
@@ -317,7 +316,7 @@ class VisualisationResultatScreen extends StatelessWidget {
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
-                  '95-110% : Dans les temps',
+                  'Dans la plage des temps attendus',
                   style: TextStyle(fontSize: 12),
                 ),
               ),
@@ -330,11 +329,35 @@ class VisualisationResultatScreen extends StatelessWidget {
               const SizedBox(width: 8),
               const Expanded(
                 child: Text(
-                  '<95% : Trop lent (plus de 5% plus lent)',
+                  'Plus lent que le temps maximum',
                   style: TextStyle(fontSize: 12),
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.yellow.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Colors.yellow),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.info, color: Colors.orange[800]),
+                const SizedBox(width: 8),
+                const Expanded(
+                  child: Text(
+                    'Le pourcentage de performance est calculé par rapport à la plage cible',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -349,8 +372,9 @@ class VisualisationResultatScreen extends StatelessWidget {
     return Tooltip(
       message: 'S${resultat.serieIndex}R${resultat.repetitionIndex}\n'
           'Réalisé: ${resultat.tempsFormate}\n'
-          'Attendu: ${_formatTemps(resultat.tempsAttendu)}\n'
-          'Performance: ${pourcentage.toStringAsFixed(0)}%',
+          'Attendu: ${resultat.plageAttendueFormatee}\n'
+          'Performance: ${pourcentage.toStringAsFixed(0)}%\n'
+          'Statut: ${resultat.statutPerformance}',
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(color: iconColor.withOpacity(0.3)),
@@ -373,17 +397,41 @@ class VisualisationResultatScreen extends StatelessWidget {
               const SizedBox(height: 2),
               Icon(
                 icon,
-                size: 24,
+                size: 20,
                 color: iconColor,
               ),
               const SizedBox(height: 2),
+              // NOUVEAU: Affichage du pourcentage avec mise en évidence
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                decoration: BoxDecoration(
+                  color: _getPerformanceColor(pourcentage).withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: _getPerformanceColor(pourcentage).withOpacity(0.5),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  '${pourcentage.toStringAsFixed(0)}%',
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: _getPerformanceColor(pourcentage),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 2),
               Text(
-                '${pourcentage.toStringAsFixed(0)}%',
+                resultat.statutPerformance,
                 style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 7,
+                  fontWeight: FontWeight.w500,
                   color: iconColor,
                 ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -395,15 +443,17 @@ class VisualisationResultatScreen extends StatelessWidget {
   Widget _buildResultatItem(TriathlonResultat resultat, Color sportColor) {
     final iconColor = resultat.couleurPerformance;
     final icon = resultat.iconePerformance;
-    final pourcentage = resultat.pourcentagePerformance;
+    final statut = resultat.statutPerformance;
     final difference = resultat.differenceTemps;
+    final pourcentage = resultat.pourcentagePerformance;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey[300] ?? Colors.grey),
+        border: Border.all(color: iconColor.withOpacity(0.3)),
         borderRadius: BorderRadius.circular(8),
+        color: iconColor.withOpacity(0.1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -414,26 +464,26 @@ class VisualisationResultatScreen extends StatelessWidget {
                 width: 50,
                 height: 50,
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
+                  color: iconColor.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(25),
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'S${resultat.serieIndex}R${resultat.repetitionIndex}',
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: iconColor,
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(icon, color: iconColor, size: 20),
+                      const SizedBox(height: 2),
+                      // NOUVEAU: Pourcentage dans l'icône
+                      Text(
+                        '${pourcentage.toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          color: iconColor,
+                        ),
                       ),
-                    ),
-                    Icon(
-                      icon,
-                      size: 20,
-                      color: iconColor,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -455,7 +505,7 @@ class VisualisationResultatScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                'Attendu: ${_formatTemps(resultat.tempsAttendu)}',
+                                'Attendu: ${resultat.plageAttendueFormatee}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: TriathlonColors.textSecondary,
@@ -466,19 +516,45 @@ class VisualisationResultatScreen extends StatelessWidget {
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: iconColor.withOpacity(0.1),
+                            color: iconColor.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Column(
                             children: [
                               Text(
-                                '${pourcentage.toStringAsFixed(0)}%',
+                                statut,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11,
                                   fontWeight: FontWeight.bold,
                                   color: iconColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              // NOUVEAU: Pourcentage mis en évidence
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.yellow.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(3),
+                                  border: Border.all(
+                                    color: Colors.orange.withOpacity(0.5),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Text(
+                                  '${pourcentage.toStringAsFixed(0)}%',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.orange[800],
+                                  ),
                                 ),
                               ),
                               Text(
@@ -495,7 +571,7 @@ class VisualisationResultatScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      resultat.dateFormatee,
+                      'S${resultat.serieIndex}R${resultat.repetitionIndex} • ${resultat.dateFormatee}',
                       style: TextStyle(
                         fontSize: 11,
                         color: TriathlonColors.textSecondary,
@@ -506,18 +582,23 @@ class VisualisationResultatScreen extends StatelessWidget {
               ),
             ],
           ),
-          if (resultat.rpe != null) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Chip(
-                  label: Text('RPE: ${resultat.rpe}'),
-                  backgroundColor: _getRpeColor(resultat.rpe!),
-                  labelStyle: const TextStyle(fontSize: 11),
-                ),
-              ],
+          if (resultat.tempsAttenduMin != resultat.tempsAttenduMax)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.info, size: 14, color: Colors.blue),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Temps min: ${resultat.tempsAttenduMinFormate} • max: ${resultat.tempsAttenduMaxFormate}',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
         ],
       ),
     );
@@ -556,18 +637,6 @@ class VisualisationResultatScreen extends StatelessWidget {
     );
   }
 
-  Color _getRpeColor(int rpe) {
-    if (rpe <= 3) return Colors.green.shade100;
-    if (rpe <= 6) return Colors.yellow.shade100;
-    return Colors.red.shade100;
-  }
-
-  String _formatTemps(double seconds) {
-    int minutes = (seconds ~/ 60).toInt();
-    int secs = (seconds % 60).toInt();
-    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-  }
-
   String _formatDifference(double difference) {
     if (difference == 0) return '±0s';
 
@@ -582,5 +651,18 @@ class VisualisationResultatScreen extends StatelessWidget {
     timeStr += '${seconds}s';
 
     return '${difference > 0 ? '+' : '-'}$timeStr';
+  }
+
+  // NOUVELLE MÉTHODE: Obtenir la couleur en fonction du pourcentage de performance
+  Color _getPerformanceColor(double pourcentage) {
+    if (pourcentage >= 110) {
+      return Colors.blue; // Très rapide
+    } else if (pourcentage >= 95) {
+      return Colors.green; // Dans la plage
+    } else if (pourcentage >= 80) {
+      return Colors.orange; // Un peu lent
+    } else {
+      return Colors.red; // Trop lent
+    }
   }
 }
