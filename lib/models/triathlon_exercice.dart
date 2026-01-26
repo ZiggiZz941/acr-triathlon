@@ -11,13 +11,15 @@ class TriathlonExercice {
       valeurReference; // VMA (km/h) pour running, temps 100m (s) pour swimming, FTP (watts) pour cycling
   int? allure; // 1-6 pour running
   int? intensite; // % pour swimming/cycling (stocke la valeur max)
-  int? intensiteMin; // % min pour plage d'intensité (NOUVEAU)
+  int? intensiteMin; // % min pour plage d'intensité
   int reposRepetitionsSec;
   int reposSeriesSec;
   double tempsMin;
   double tempsMax;
   DateTime dateCreation;
   double tempsReference;
+  double?
+      poids; // NOUVEAU: Poids de l'utilisateur au moment de la création (kg)
 
   TriathlonExercice({
     required this.id,
@@ -29,13 +31,14 @@ class TriathlonExercice {
     required this.valeurReference,
     this.allure,
     this.intensite,
-    this.intensiteMin, // NOUVEAU
+    this.intensiteMin,
     this.reposRepetitionsSec = 0,
     this.reposSeriesSec = 0,
     this.tempsMin = 0,
     this.tempsMax = 0,
     DateTime? dateCreation,
     this.tempsReference = 0,
+    this.poids, // NOUVEAU
   }) : dateCreation = dateCreation ?? DateTime.now();
 
   // Getters pour les propriétés formatées
@@ -242,6 +245,96 @@ class TriathlonExercice {
     }
   }
 
+  // NOUVEAU: Méthode pour calculer le w/kg (watts par kilogramme)
+  double? calculerWkg() {
+    if (sportType != SportType.cycling) {
+      return null; // w/kg n'est pertinent que pour le cyclisme
+    }
+
+    if (poids == null || poids! <= 0 || valeurReference <= 0) {
+      return null;
+    }
+
+    return valeurReference / poids!;
+  }
+
+  // NOUVEAU: Méthode pour calculer la plage w/kg selon l'intensité
+  (double? wkgMin, double? wkgMax) calculerPlageWkg() {
+    if (sportType != SportType.cycling) {
+      return (null, null); // w/kg n'est pertinent que pour le cyclisme
+    }
+
+    if (poids == null || poids! <= 0 || valeurReference <= 0) {
+      return (null, null);
+    }
+
+    // Calculer les intensités min et max
+    double intensiteMinPourcentage = (intensiteMin ?? intensite ?? 80) / 100.0;
+    double intensiteMaxPourcentage = (intensite ?? 80) / 100.0;
+
+    // Si une seule intensité, les deux valeurs sont égales
+    if (intensiteMin == null && intensite != null) {
+      intensiteMinPourcentage = intensiteMaxPourcentage;
+    }
+
+    double puissanceMin = valeurReference * intensiteMinPourcentage;
+    double puissanceMax = valeurReference * intensiteMaxPourcentage;
+
+    return (puissanceMin / poids!, puissanceMax / poids!);
+  }
+
+  // NOUVEAU: Méthode pour obtenir la puissance en watts selon l'intensité
+  (double? puissanceMin, double? puissanceMax) getPuissanceWatts() {
+    if (sportType != SportType.cycling) {
+      return (null, null);
+    }
+
+    if (valeurReference <= 0) {
+      return (null, null);
+    }
+
+    // Calculer les intensités min et max
+    double intensiteMinPourcentage = (intensiteMin ?? intensite ?? 80) / 100.0;
+    double intensiteMaxPourcentage = (intensite ?? 80) / 100.0;
+
+    // Si une seule intensité, les deux valeurs sont égales
+    if (intensiteMin == null && intensite != null) {
+      intensiteMinPourcentage = intensiteMaxPourcentage;
+    }
+
+    double puissanceMin = valeurReference * intensiteMinPourcentage;
+    double puissanceMax = valeurReference * intensiteMaxPourcentage;
+
+    return (puissanceMin, puissanceMax);
+  }
+
+  // NOUVEAU: Getter pour formater le w/kg
+  String? getWkgFormatted() {
+    final wkg = calculerWkg();
+    return wkg != null ? wkg.toStringAsFixed(1) : null;
+  }
+
+  // NOUVEAU: Getter pour formater la plage w/kg
+  String? getPlageWkgFormatted() {
+    final (wkgMin, wkgMax) = calculerPlageWkg();
+    if (wkgMin != null && wkgMax != null) {
+      return '${wkgMin.toStringAsFixed(1)}-${wkgMax.toStringAsFixed(1)}';
+    }
+    return null;
+  }
+
+  // NOUVEAU: Getter pour formater la puissance
+  String? getPuissanceFormatted() {
+    final (puissanceMin, puissanceMax) = getPuissanceWatts();
+    if (puissanceMin != null && puissanceMax != null) {
+      if (puissanceMin == puissanceMax) {
+        return '${puissanceMin.toInt()}w';
+      }
+      return '${puissanceMin.toInt()}-${puissanceMax.toInt()}w';
+    }
+    return null;
+  }
+
   // Description de l'exercice
   String getDescription() {
     String distanceStr = getDistanceFormatee();
@@ -271,8 +364,49 @@ class TriathlonExercice {
           '$resultText\n'
           'Repos répétitions: $reposRepetitionsFormate\n'
           'Repos séries: $reposSeriesFormate';
+    } else if (sportType == SportType.cycling) {
+      // NOUVEAU: Version améliorée pour le cyclisme avec w/kg
+      String intensiteStr = _getIntensiteDescription();
+
+      String resultText;
+      if (intensiteMin != null &&
+          intensite != null &&
+          intensiteMin != intensite) {
+        // Plage d'intensité
+        resultText = 'Temps : $tempsMinFormatted à $tempsMaxFormatted';
+      } else {
+        // Intensité unique
+        resultText = 'Temps : $tempsMinFormatted';
+      }
+
+      String baseText =
+          '$nbSeries séries de $nbRepetitions x $distanceStr à $intensiteStr\n'
+          '$resultText\n'
+          'Repos répétitions: $reposRepetitionsFormate\n'
+          'Repos séries: $reposSeriesFormate';
+
+      // Ajouter les informations de puissance et w/kg si disponibles
+      String infoPuissance = '';
+      final puissanceFormatted = getPuissanceFormatted();
+      final wkgFormatted = getWkgFormatted();
+      final plageWkgFormatted = getPlageWkgFormatted();
+
+      if (puissanceFormatted != null) {
+        infoPuissance = '\nPuissance: $puissanceFormatted';
+
+        if (wkgFormatted != null && poids != null) {
+          infoPuissance +=
+              '\nFTP: $wkgFormatted w/kg (${poids!.toStringAsFixed(1)}kg)';
+
+          if (plageWkgFormatted != null) {
+            infoPuissance += '\nw/kg zone: $plageWkgFormatted w/kg';
+          }
+        }
+      }
+
+      return baseText + infoPuissance;
     } else {
-      // Pour swimming et cycling
+      // Pour swimming
       String intensiteStr = _getIntensiteDescription();
 
       String resultText;
@@ -314,7 +448,7 @@ class TriathlonExercice {
     }
   }
 
-  // NOUVELLE méthode pour obtenir la description de l'intensité
+  // Méthode pour obtenir la description de l'intensité
   String _getIntensiteDescription() {
     if (intensiteMin != null &&
         intensite != null &&
@@ -325,7 +459,7 @@ class TriathlonExercice {
     }
   }
 
-  // Méthode pour formater le temps avec centièmes (identique à CalculSimpleScreen)
+  // Méthode pour formater le temps avec centièmes
   String _formatTimeAvecCentiemes(double seconds) {
     int minutes = (seconds ~/ 60).toInt();
     double secondesDecimal = seconds % 60;
@@ -359,12 +493,13 @@ class TriathlonExercice {
       'valeurReference': valeurReference,
       'allure': allure,
       'intensite': intensite,
-      'intensiteMin': intensiteMin, // NOUVEAU
+      'intensiteMin': intensiteMin,
       'reposRepetitionsSec': reposRepetitionsSec,
       'reposSeriesSec': reposSeriesSec,
       'tempsMin': tempsMin,
       'tempsMax': tempsMax,
       'dateCreation': dateCreation.toIso8601String(),
+      'poids': poids, // NOUVEAU
     };
   }
 
@@ -382,14 +517,22 @@ class TriathlonExercice {
       valeurReference: (json['valeurReference'] ?? 0).toDouble(),
       allure: json['allure'],
       intensite: json['intensite'],
-      intensiteMin: json['intensiteMin'], // NOUVEAU
+      intensiteMin: json['intensiteMin'],
       reposRepetitionsSec: json['reposRepetitionsSec'] ?? 0,
       reposSeriesSec: json['reposSeriesSec'] ?? 0,
       tempsMin: (json['tempsMin'] ?? 0).toDouble(),
       tempsMax: (json['tempsMax'] ?? 0).toDouble(),
       dateCreation: DateTime.parse(
           json['dateCreation'] ?? DateTime.now().toIso8601String()),
+      poids: json['poids'] != null
+          ? (json['poids'] as num).toDouble()
+          : null, // NOUVEAU
     );
+  }
+
+  // NOUVEAU: Getter pour le poids formaté
+  String? get poidsFormatted {
+    return poids != null ? '${poids!.toStringAsFixed(1)} kg' : null;
   }
 
   get vma => null;

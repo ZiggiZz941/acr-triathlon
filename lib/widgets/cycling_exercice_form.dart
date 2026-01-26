@@ -33,6 +33,7 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
   bool _showResult = false;
   bool _useProfileFTP = false;
   String _resultText = '';
+  double? _poidsUtilisateur; // NOUVEAU: Poids de l'utilisateur
 
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
@@ -125,13 +126,15 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadProfileFTP();
+    _loadProfileData(); // MODIFIÉ: Charger toutes les données du profil
   }
 
-  void _loadProfileFTP() {
+  // MODIFIÉ: Charger le FTP ET le poids du profil
+  void _loadProfileData() {
     final dataManager = Provider.of<DataManager>(context, listen: false);
     final profile = dataManager.getTriathlonProfile();
 
+    // Charger le FTP
     if (profile.containsKey('cycling_ftp')) {
       final ftp = profile['cycling_ftp'] as double?;
       if (ftp != null) {
@@ -141,6 +144,16 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
             _useProfileFTP = true;
           });
         }
+      }
+    }
+
+    // NOUVEAU: Charger le poids
+    if (profile.containsKey('poids')) {
+      final poids = profile['poids'] as double?;
+      if (poids != null) {
+        setState(() {
+          _poidsUtilisateur = poids;
+        });
       }
     }
   }
@@ -186,12 +199,23 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
     }
   }
 
+  // NOUVEAU: Fonction pour calculer le w/kg
+  String? _calculerWkg(double ftp) {
+    if (_poidsUtilisateur != null && _poidsUtilisateur! > 0) {
+      double wkg = ftp / _poidsUtilisateur!;
+      return wkg.toStringAsFixed(1);
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final dataManager = Provider.of<DataManager>(context);
     final profile = dataManager.getTriathlonProfile();
     final hasProfileFTP =
         profile.containsKey('cycling_ftp') && profile['cycling_ftp'] != null;
+    final hasProfilePoids = // NOUVEAU
+        profile.containsKey('poids') && profile['poids'] != null;
 
     final sportColor = TriathlonColors.cycling;
 
@@ -423,7 +447,7 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
                           setState(() {
                             _useProfileFTP = value;
                             if (value) {
-                              _loadProfileFTP();
+                              _loadProfileData(); // MODIFIÉ: Charger toutes les données
                             }
                           });
                           _updateExercice();
@@ -595,11 +619,72 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
                     ),
                     const SizedBox(width: 8),
                     Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Utilisation du FTP du profil',
+                            style: TextStyle(
+                              color: TriathlonColors.textPrimary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          // NOUVEAU: Afficher le w/kg si le poids est disponible
+                          if (_poidsUtilisateur != null &&
+                              _poidsUtilisateur! > 0)
+                            FutureBuilder<double>(
+                              future: Future.value(double.tryParse(
+                                      _ftpController.text
+                                          .replaceAll(',', '.')) ??
+                                  0),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData && snapshot.data! > 0) {
+                                  final ftp = snapshot.data!;
+                                  final wkg = _calculerWkg(ftp);
+                                  if (wkg != null) {
+                                    return Text(
+                                      'Poids profil: ${_poidsUtilisateur!.toStringAsFixed(1)} kg • w/kg: $wkg',
+                                      style: TextStyle(
+                                        color: TriathlonColors.textPrimary,
+                                        fontSize: 11,
+                                      ),
+                                    );
+                                  }
+                                }
+                                return const SizedBox();
+                              },
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // NOUVEAU: Information si le poids n'est pas disponible
+            if (_useProfileFTP && hasProfileFTP && !hasProfilePoids)
+              Container(
+                margin: const EdgeInsets.only(top: 10),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.warning,
+                      color: Colors.orange,
+                      size: 18,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
                       child: Text(
-                        'Utilisation du FTP du profil',
+                        'Poids non disponible dans le profil. Le calcul w/kg ne sera pas effectué.',
                         style: TextStyle(
-                          color: TriathlonColors.textPrimary,
-                          fontSize: 12,
+                          color: Colors.orange[800],
+                          fontSize: 11,
                         ),
                       ),
                     ),
@@ -724,6 +809,11 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
       widget.exercice.reposRepetitionsSec = _reposRepetitionsSec;
       widget.exercice.reposSeriesSec = _reposSeriesSec;
 
+      // NOUVEAU: Sauvegarder le poids utilisé dans l'exercice
+      if (_poidsUtilisateur != null) {
+        widget.exercice.poids = _poidsUtilisateur;
+      }
+
       // Recalculer les temps
       widget.exercice.calculerTemps();
 
@@ -738,13 +828,33 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
       String reposSerFormate =
           TriathlonExercice.formatTempsEnMinutes(_reposSeriesSec);
 
+      // NOUVEAU: Ajouter le calcul w/kg au résultat
+      String resultatBase = '${zoneInfo['name']} - ${zoneInfo['desc']}\n'
+          'Intensité: ${zoneInfo['range']}\n'
+          '$series séries de $repetitions x ${distance.toInt()}m\n'
+          'Temps: $tempsMinFormate à $tempsMaxFormate\n'
+          'Repos entre répétitions: $reposRepFormate\n'
+          'Repos entre séries: $reposSerFormate';
+
+      // Ajouter le calcul w/kg si disponible
+      String? wkg = _calculerWkg(ftp);
+      String infoWkg = '';
+      if (wkg != null && _poidsUtilisateur != null) {
+        // Calculer aussi les valeurs de puissance pour les zones min et max
+        double puissanceMin = ftp * (intensiteMin / 100);
+        double puissanceMax = ftp * (intensiteMax / 100);
+        String wkgMin = (puissanceMin / _poidsUtilisateur!).toStringAsFixed(1);
+        String wkgMax = (puissanceMax / _poidsUtilisateur!).toStringAsFixed(1);
+
+        infoWkg = '\n\nCalculs w/kg:\n'
+            'FTP: ${ftp.toStringAsFixed(1)}w • Poids: ${_poidsUtilisateur!.toStringAsFixed(1)}kg\n'
+            'FTP: $wkg w/kg\n'
+            'Puissance zone: ${puissanceMin.toStringAsFixed(0)}-${puissanceMax.toStringAsFixed(0)}w\n'
+            'w/kg zone: $wkgMin-$wkgMax w/kg';
+      }
+
       setState(() {
-        _resultText = '${zoneInfo['name']} - ${zoneInfo['desc']}\n'
-            'Intensité: ${zoneInfo['range']}\n'
-            '$series séries de $repetitions x ${distance.toInt()}m\n'
-            'Temps: $tempsMinFormate à $tempsMaxFormate\n'
-            'Repos entre répétitions: $reposRepFormate\n'
-            'Repos entre séries: $reposSerFormate';
+        _resultText = resultatBase + infoWkg;
         _showResult = true;
       });
 
