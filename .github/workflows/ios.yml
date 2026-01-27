@@ -1,4 +1,4 @@
-name: Build iOS App
+name: Build iOS IPA
 
 on:
   push:
@@ -17,25 +17,23 @@ jobs:
         with:
           flutter-version: '3.10.0'
 
-      - name: Fix iOS structure
-        run: |
-          flutter clean
-          flutter create --platforms=ios .
-
       - name: Install dependencies
         run: |
           flutter pub get
 
-      - name: Install iOS dependencies
+      - name: Setup iOS
         run: |
           cd ios
           pod install --repo-update
 
-      - name: Build IPA
-        run: flutter build ipa --debug --no-codesign
+      - name: Build IPA (debug)
+        run: |
+          flutter build ipa --debug --no-codesign
 
-      - name: Upload IPA
+      - name: Upload IPA artifact
+        if: success()
         uses: actions/upload-artifact@v3
         with:
           name: triathlon-app-ipa
           path: build/ios/ipa/*.ipa
+          retention-days: 7
