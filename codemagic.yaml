@@ -4,26 +4,28 @@ workflows:
     max_build_duration: 120
     environment:
       groups:
-        - appstore_credentials  # Vous créerez ce groupe après
+        - appstore_credentials  # À créer sur Codemagic plus tard
       vars:
         XCODE_PROJECT: "ios/Runner.xcworkspace"
         XCODE_SCHEME: "Runner"
-        BUNDLE_ID: "com.votre.nom.triathlonapp"  # À MODIFIER
-      flutter: stable
-      xcode: latest  # Codemagic utilisera Xcode 15+
+        BUNDLE_ID: "com.triathlon.app"  # MODIFIEZ avec un identifiant unique
+      flutter: "3.16.0"  # Version spécifique
+      xcode: latest
       cocoapods: default
     scripts:
       - name: Install dependencies
         script: |
-          flutter packages pub get
-          cd ios && pod install
-      - name: Build iOS
+          flutter pub get
+      - name: Setup iOS
+        script: |
+          cd ios
+          pod install --repo-update
+      - name: Build iOS IPA
         script: |
           flutter build ipa --release --no-codesign
     artifacts:
       - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
     publishing:
       email:
         recipients:
-          - thomaschollet941@gmail.com.com
+          - thomaschollet941@gmail.com  # CORRIGÉ: un seul .com
