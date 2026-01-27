@@ -15,7 +15,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.10.0'
+          flutter-version: '3.13.0'  # Version stable
 
       - name: Install dependencies
         run: |
@@ -26,14 +26,12 @@ jobs:
           cd ios
           pod install --repo-update
 
-      - name: Build IPA (debug)
+      - name: Build IPA
         run: |
-          flutter build ipa --debug --no-codesign
+          flutter build ipa --release --no-codesign
 
-      - name: Upload IPA artifact
-        if: success()
+      - name: Upload IPA
         uses: actions/upload-artifact@v3
         with:
           name: triathlon-app-ipa
           path: build/ios/ipa/*.ipa
-          retention-days: 7
