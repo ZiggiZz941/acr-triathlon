@@ -9,23 +9,31 @@ jobs:
     runs-on: macos-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
     
     - name: Setup Flutter
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.13.0'
-        
+        flutter-version: '3.10.0'  # Version plus stable
+    
     - name: Install dependencies
       run: |
         flutter pub get
-        cd ios && pod install
+        
+    - name: Setup iOS
+      run: |
+        cd ios
+        pod install --repo-update
         
     - name: Build IPA (debug)
-      run: flutter build ipa --debug --no-codesign
-      
+      run: |
+        flutter build ipa --debug --no-codesign
+        
     - name: Upload IPA artifact
+      if: success()
       uses: actions/upload-artifact@v3
       with:
         name: triathlon-app-ipa
         path: build/ios/ipa/*.ipa
+        retention-days: 7
