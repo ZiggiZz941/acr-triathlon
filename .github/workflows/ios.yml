@@ -7,31 +7,40 @@ on:
 jobs:
   build-ios:
     runs-on: macos-latest
-
+    
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.13.0'  # Version stable
-
-      - name: Install dependencies
-        run: |
-          flutter pub get
-
-      - name: Setup iOS
-        run: |
-          cd ios
-          pod install --repo-update
-
-      - name: Build IPA
-        run: |
-          flutter build ipa --release --no-codesign
-
-      - name: Upload IPA
-        uses: actions/upload-artifact@v3
-        with:
-          name: triathlon-app-ipa
-          path: build/ios/ipa/*.ipa
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.16.0'
+        
+    - name: Install dependencies
+      run: |
+        flutter pub get
+        
+    - name: Create iOS project if missing
+      run: |
+        if [ ! -d "ios" ]; then
+          echo "Création des fichiers iOS..."
+          flutter create --platforms=ios --org com.triathlon .
+        fi
+        
+    - name: Setup iOS dependencies
+      run: |
+        cd ios
+        pod install --repo-update
+        
+    - name: Build iOS IPA
+      run: |
+        flutter build ipa --release --no-codesign
+        
+    - name: Upload IPA artifact
+      if: success()
+      uses: actions/upload-artifact@v3
+      with:
+        name: triathlon-app-ipa
+        path: build/ios/ipa/*.ipa
+        retention-days: 7
