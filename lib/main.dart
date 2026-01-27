@@ -75,7 +75,7 @@ class _MyAppState extends State<MyApp> {
         return ChangeNotifierProvider<DataManager>.value(
           value: dataManager,
           child: MaterialApp(
-            title: 'ACR Triathlon',
+            title: 'ACR',
             theme: ThemeData(
               primarySwatch: Colors.blue,
               useMaterial3: true,

@@ -9,7 +9,7 @@ import 'running/running_main_screen.dart';
 import 'swimming/swimming_main_screen.dart';
 import 'cycling/cycling_main_screen.dart';
 import 'profil/triathlon_profil_screen.dart';
-import 'historique/historique_triathlon_screen.dart'; // IMPORT AJOUTÉ
+import 'historique/historique_triathlon_screen.dart';
 
 class MainTriathlonMenuScreen extends StatelessWidget {
   const MainTriathlonMenuScreen({super.key});
@@ -59,43 +59,84 @@ class MainTriathlonMenuScreen extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        // Logo
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(60),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 8,
-                                spreadRadius: 2,
+                        // Logo avec image de course à pied à côté
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Image Running Icon (RONDE)
+                            Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(
+                                    60), // Changé à 60 pour un cercle parfait
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Image.asset(
-                              TriathlonImages.triathlonLogo,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                // Fallback si l'image n'est pas trouvée
-                                return const Icon(
-                                  Icons.directions_bike,
-                                  size: 60,
-                                  color: TriathlonColors.primary,
-                                );
-                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(
+                                    20.0), // Même padding que le logo triathlon
+                                child: Image.asset(
+                                  'assets/images/swimming_icon.png',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.directions_run,
+                                      size:
+                                          60, // Même taille que le fallback du triathlon
+                                      color: TriathlonColors.primary,
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
-                          ),
+
+                            const SizedBox(width: 15),
+
+                            // Logo Triathlon
+                            Container(
+                              width: 120,
+                              height: 120,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(60),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.2),
+                                    blurRadius: 8,
+                                    spreadRadius: 2,
+                                  ),
+                                ],
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(20.0),
+                                child: Image.asset(
+                                  TriathlonImages.triathlonLogo,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.directions_bike,
+                                      size: 60,
+                                      color: TriathlonColors.primary,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
 
                         const SizedBox(height: 15),
 
                         // Titre
                         Text(
-                          'ACR Triathlon',
+                          'ACR',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 28,
@@ -170,8 +211,7 @@ class MainTriathlonMenuScreen extends StatelessWidget {
 
                         // Deuxième ligne : Course à pied
                         SizedBox(
-                          width: double
-                              .infinity, // Prend toute la largeur disponible
+                          width: double.infinity,
                           child: TriathlonMenuButton(
                             sportType: SportType.running,
                             onPressed: () {
@@ -198,7 +238,6 @@ class MainTriathlonMenuScreen extends StatelessWidget {
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               children: [
-                                // BOUTON HISTORIQUE AJOUTÉ ICI
                                 ListTile(
                                   leading: const Icon(Icons.history,
                                       color: TriathlonColors.primary),
@@ -217,11 +256,10 @@ class MainTriathlonMenuScreen extends StatelessWidget {
                                   },
                                 ),
                                 const Divider(height: 1),
-
                                 ListTile(
                                   leading: const Icon(Icons.person,
                                       color: TriathlonColors.primary),
-                                  title: const Text('Mon Profil Triathlon'),
+                                  title: const Text('Mon Profil'),
                                   trailing: const Icon(Icons.arrow_forward_ios),
                                   onTap: () {
                                     Navigator.push(
@@ -234,7 +272,6 @@ class MainTriathlonMenuScreen extends StatelessWidget {
                                   },
                                 ),
                                 const Divider(height: 1),
-
                                 ListTile(
                                   leading: const Icon(Icons.info,
                                       color: TriathlonColors.primary),
@@ -248,7 +285,7 @@ class MainTriathlonMenuScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20), // Espace pour le scroll
+                        const SizedBox(height: 20),
                       ],
                     ),
                   ),
@@ -285,8 +322,9 @@ class MainTriathlonMenuScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('ACR Triathlon'),
-        content: const Text('Application d\'entraînement pour triathlon\n\n'
+        title: const Text('ACR'),
+        content: const Text(
+            'Application d\'entraînement pour triathlon et course à pied\n\n'
             'Natation - Cyclisme - Course à pied\n\n'
             'Développé pour les athlètes de tous niveaux\n\n'
             'Version 1.8.2'),
