@@ -89,7 +89,7 @@ class MainTriathlonMenuScreen extends StatelessWidget {
                                     return const Icon(
                                       Icons.directions_run,
                                       size:
-                                          60, // Même taille que le fallback du triathlon
+                                          120, // Même taille que le fallback du triathlon
                                       color: TriathlonColors.primary,
                                     );
                                   },
