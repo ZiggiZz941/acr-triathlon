@@ -4,28 +4,71 @@ workflows:
     max_build_duration: 120
     environment:
       groups:
-        - appstore_credentials  # À créer sur Codemagic plus tard
+        - appstore_credentials  # À créer sur Codemagic
       vars:
         XCODE_PROJECT: "ios/Runner.xcworkspace"
         XCODE_SCHEME: "Runner"
-        BUNDLE_ID: "com.triathlon.app"  # MODIFIEZ avec un identifiant unique
-      flutter: "3.16.0"  # Version spécifique
+        BUNDLE_ID: "com.triathlon.app"  # MODIFIEZ avec votre identifiant unique
+        APP_STORE_CONNECT_KEY_ID: $APP_STORE_CONNECT_KEY_ID
+        APP_STORE_CONNECT_ISSUER_ID: $APP_STORE_CONNECT_ISSUER_ID
+        APP_STORE_CONNECT_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
+        CERTIFICATE_PRIVATE_KEY: $CERTIFICATE_PRIVATE_KEY
+      flutter: "3.16.0"
       xcode: latest
       cocoapods: default
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: 'main'
+          include: true
+          source: true
     scripts:
+      - name: Setup Flutter
+        script: |
+          flutter config --no-analytics
+          flutter doctor -v
       - name: Install dependencies
         script: |
           flutter pub get
-      - name: Setup iOS
+          cd ios
+          pod repo update
+          pod install
+          cd ..
+      - name: Set up code signing
+        script: |
+          # Sauvegarde de la clé de certificat
+          echo $CERTIFICATE_PRIVATE_KEY | base64 --decode > /tmp/certificate.p12
+          
+          # Création du keychain
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          
+          # Import du certificat
+          security import /tmp/certificate.p12 -k build.keychain -P $CERTIFICATE_PRIVATE_KEY_PASSWORD -A
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+          
+          # Nettoyage
+          rm -f /tmp/certificate.p12
+      - name: Increment build number
         script: |
           cd ios
-          pod install --repo-update
+          agvtool new-version -all $(($(git rev-list --count HEAD)+1000))
+          cd ..
       - name: Build iOS IPA
         script: |
           flutter build ipa --release --no-codesign
+      - name: Codesign IPA
+        script: |
+          cd ios
+          xcodebuild -workspace Runner.xcworkspace -scheme Runner -configuration Release archive -archivePath RunnerArchive.xcarchive
+          xcodebuild -exportArchive -archivePath RunnerArchive.xcarchive -exportOptionsPlist ../export_options.plist -exportPath .
     artifacts:
       - build/ios/ipa/*.ipa
+      - build/ios/RunnerArchive.xcarchive
     publishing:
       email:
         recipients:
-          - thomaschollet941@gmail.com  # CORRIGÉ: un seul .com
+          - thomaschollet941@gmail.com
