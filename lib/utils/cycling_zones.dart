@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 class CyclingZones {
@@ -53,26 +55,21 @@ class CyclingZones {
       'description': 'Anaérobie',
       'range': '>120% FTP',
       'min': 120,
-      'max': 130,
+      'max': 130, // Limite max arbitraire
       'color': Colors.purple,
     },
   ];
 
   static Map<String, dynamic>? getZoneById(String zoneId) {
-    try {
-      return zones.firstWhere((zone) => zone['id'] == zoneId);
-    } catch (e) {
-      return null;
-    }
+    return zones.firstWhere((zone) => zone['id'] == zoneId);
   }
 
-  // MODIFIÉ : Retourne une List<int> au lieu d'un tuple
-  static List<int> getIntensityRangeForZone(String zoneId) {
+  static (int min, int max) getIntensityRangeForZone(String zoneId) {
     final zone = getZoneById(zoneId);
     if (zone != null) {
-      return [zone['min'] as int, zone['max'] as int];
+      return (zone['min'] as int, zone['max'] as int);
     }
-    return [85, 95]; // Zone 3 par défaut
+    return (85, 95); // Zone 3 par défaut
   }
 
   static String getZoneName(String zoneId) {

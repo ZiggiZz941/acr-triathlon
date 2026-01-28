@@ -265,14 +265,13 @@ class TriathlonExercice {
   }
 
   // NOUVEAU: Méthode pour calculer la plage w/kg selon l'intensité
-  // MODIFIÉ : Utiliser une Map ou List au lieu d'un tuple
-  Map<String, double?> calculerPlageWkg() {
+  (double? wkgMin, double? wkgMax) calculerPlageWkg() {
     if (sportType != SportType.cycling) {
-      return {'min': null, 'max': null};
+      return (null, null); // w/kg n'est pertinent que pour le cyclisme
     }
 
     if (poids == null || poids! <= 0 || valeurReference <= 0) {
-      return {'min': null, 'max': null};
+      return (null, null);
     }
 
     // Calculer les intensités min et max
@@ -287,18 +286,17 @@ class TriathlonExercice {
     double puissanceMin = valeurReference * intensiteMinPourcentage;
     double puissanceMax = valeurReference * intensiteMaxPourcentage;
 
-    return {'min': puissanceMin / poids!, 'max': puissanceMax / poids!};
+    return (puissanceMin / poids!, puissanceMax / poids!);
   }
 
   // NOUVEAU: Méthode pour obtenir la puissance en watts selon l'intensité
-  // MODIFIÉ : Utiliser une Map ou List au lieu d'un tuple
-  Map<String, double?> getPuissanceWatts() {
+  (double? puissanceMin, double? puissanceMax) getPuissanceWatts() {
     if (sportType != SportType.cycling) {
-      return {'min': null, 'max': null};
+      return (null, null);
     }
 
     if (valeurReference <= 0) {
-      return {'min': null, 'max': null};
+      return (null, null);
     }
 
     // Calculer les intensités min et max
@@ -313,7 +311,7 @@ class TriathlonExercice {
     double puissanceMin = valeurReference * intensiteMinPourcentage;
     double puissanceMax = valeurReference * intensiteMaxPourcentage;
 
-    return {'min': puissanceMin, 'max': puissanceMax};
+    return (puissanceMin, puissanceMax);
   }
 
   // NOUVEAU: Getter pour formater le w/kg
@@ -324,10 +322,7 @@ class TriathlonExercice {
 
   // NOUVEAU: Getter pour formater la plage w/kg
   String? getPlageWkgFormatted() {
-    final plageWkg = calculerPlageWkg();
-    final wkgMin = plageWkg['min'];
-    final wkgMax = plageWkg['max'];
-
+    final (wkgMin, wkgMax) = calculerPlageWkg();
     if (wkgMin != null && wkgMax != null) {
       return '${wkgMin.toStringAsFixed(1)}-${wkgMax.toStringAsFixed(1)}';
     }
@@ -336,10 +331,7 @@ class TriathlonExercice {
 
   // NOUVEAU: Getter pour formater la puissance
   String? getPuissanceFormatted() {
-    final puissance = getPuissanceWatts();
-    final puissanceMin = puissance['min'];
-    final puissanceMax = puissance['max'];
-
+    final (puissanceMin, puissanceMax) = getPuissanceWatts();
     if (puissanceMin != null && puissanceMax != null) {
       if (puissanceMin == puissanceMax) {
         return '${puissanceMin.toInt()}w';
@@ -540,7 +532,7 @@ class TriathlonExercice {
           json['dateCreation'] ?? DateTime.now().toIso8601String()),
       poids: json['poids'] != null
           ? (json['poids'] as num).toDouble()
-          : null, // NOUVEAU - VIRGULE EN TROP SUPPRIMÉE ICI
+          : null, // NOUVEAU
     );
   }
 
@@ -549,7 +541,5 @@ class TriathlonExercice {
     return poids != null ? '${poids!.toStringAsFixed(1)} kg' : null;
   }
 
-  // MODIFIÉ : Supprimer le getter vma inutile ou le corriger
-  // Si vous avez besoin d'un getter vma, faites-le comme ceci :
-  double? get vma => sportType == SportType.running ? valeurReference : null;
+  get vma => null;
 }

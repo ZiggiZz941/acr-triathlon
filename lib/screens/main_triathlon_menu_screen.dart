@@ -89,7 +89,7 @@ class MainTriathlonMenuScreen extends StatelessWidget {
                                     return const Icon(
                                       Icons.directions_run,
                                       size:
-                                          120, // Même taille que le fallback du triathlon
+                                          60, // Même taille que le fallback du triathlon
                                       color: TriathlonColors.primary,
                                     );
                                   },
@@ -327,7 +327,7 @@ class MainTriathlonMenuScreen extends StatelessWidget {
             'Application d\'entraînement pour triathlon et course à pied\n\n'
             'Natation - Cyclisme - Course à pied\n\n'
             'Développé pour les athlètes de tous niveaux\n\n'
-            'Version 1.8.2'),
+            'Version 1.9.2'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

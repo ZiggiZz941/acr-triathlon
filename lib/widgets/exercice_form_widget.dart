@@ -52,7 +52,7 @@ class _ExerciceFormWidgetState extends State<ExerciceFormWidget>
       CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
     );
 
-    // CORRECTION : Utiliser valeurReference au lieu de vma
+    // Initialiser les contrôleurs avec les valeurs de l'exercice
     _nomController.text = widget.exercice.nom;
     _distanceController.text = widget.exercice.distance > 0
         ? widget.exercice.distance.toInt().toString()
@@ -63,23 +63,15 @@ class _ExerciceFormWidgetState extends State<ExerciceFormWidget>
     _repetitionsController.text = widget.exercice.nbRepetitions > 0
         ? widget.exercice.nbRepetitions.toString()
         : '1';
-
-    // CORRECTION ICI : Utiliser valeurReference pour running
-    if (widget.exercice.sportType == SportType.running) {
-      _vmaController.text = widget.exercice.valeurReference > 0
-          ? widget.exercice.valeurReference.toStringAsFixed(1)
-          : '';
-    } else {
-      _vmaController.text = '';
-    }
-
+    _vmaController.text =
+        widget.exercice.vma > 0 ? widget.exercice.vma.toStringAsFixed(1) : '';
     _reposRepetitionsController.text = widget.exercice.reposRepetitionsFormate;
     _reposSeriesController.text = widget.exercice.reposSeriesFormate;
     _selectedAllure =
         (widget.exercice.allure ?? 3) - 1; // Allure 3 par défaut si null
 
     // Si l'exercice a déjà des valeurs, calculer
-    if (widget.exercice.distance > 0 && widget.exercice.valeurReference > 0) {
+    if (widget.exercice.distance > 0 && widget.exercice.vma > 0) {
       _updateExercice();
     }
   }
@@ -117,12 +109,7 @@ class _ExerciceFormWidgetState extends State<ExerciceFormWidget>
             Row(
               children: [
                 Text(
-                  // CORRECTION : Titre dynamique selon le sport
-                  widget.exercice.sportType == SportType.running
-                      ? 'Exercice Course'
-                      : widget.exercice.sportType == SportType.swimming
-                          ? 'Exercice Natation'
-                          : 'Exercice Cyclisme',
+                  'Exercice Course',
                   style: TextStyle(
                     color: sportColor,
                     fontSize: 20,
@@ -292,152 +279,85 @@ class _ExerciceFormWidgetState extends State<ExerciceFormWidget>
 
             const SizedBox(height: 15),
 
-            // VMA uniquement pour running
-            if (widget.exercice.sportType == SportType.running) ...[
-              Text(
-                'VMA (km/h)',
-                style: TextStyle(color: sportColor, fontSize: 16),
-              ),
-              const SizedBox(height: 5),
-              TextField(
-                controller: _vmaController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                onChanged: (_) => _updateExercice(),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: 'Ex: 16.5',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      TriathlonDimens.borderRadiusMedium,
-                    ),
-                    borderSide: BorderSide(
-                      color: sportColor,
-                      width: 2,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: TriathlonDimens.paddingMedium,
-                    vertical: TriathlonDimens.paddingMedium,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              // Allure uniquement pour running
-              Text(
-                'Allure',
-                style: TextStyle(color: sportColor, fontSize: 16),
-              ),
-              const SizedBox(height: 5),
-              Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: sportColor, width: 2),
+            // VMA
+            Text(
+              'VMA (km/h)',
+              style: TextStyle(color: sportColor, fontSize: 16),
+            ),
+            const SizedBox(height: 5),
+            TextField(
+              controller: _vmaController,
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              onChanged: (_) => _updateExercice(),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                hintText: 'Ex: 16.5',
+                border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(
                     TriathlonDimens.borderRadiusMedium,
                   ),
+                  borderSide: BorderSide(
+                    color: sportColor,
+                    width: 2,
+                  ),
                 ),
-                child: DropdownButtonFormField<int>(
-                  value: _selectedAllure,
-                  items: TriathlonStrings.alluresSimplifie
-                      .asMap()
-                      .entries
-                      .map((entry) {
-                    return DropdownMenuItem<int>(
-                      value: entry.key,
-                      child: Text(
-                        entry.value,
-                        style: TextStyle(
-                          color: TriathlonColors.textPrimary,
-                          fontSize: 15,
-                        ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: TriathlonDimens.paddingMedium,
+                  vertical: TriathlonDimens.paddingMedium,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            // Allure
+            Text(
+              'Allure',
+              style: TextStyle(color: sportColor, fontSize: 16),
+            ),
+            const SizedBox(height: 5),
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: sportColor, width: 2),
+                borderRadius: BorderRadius.circular(
+                  TriathlonDimens.borderRadiusMedium,
+                ),
+              ),
+              child: DropdownButtonFormField<int>(
+                value: _selectedAllure,
+                items: TriathlonStrings.alluresSimplifie
+                    .asMap()
+                    .entries
+                    .map((entry) {
+                  return DropdownMenuItem<int>(
+                    value: entry.key,
+                    child: Text(
+                      entry.value,
+                      style: TextStyle(
+                        color: TriathlonColors.textPrimary,
+                        fontSize: 15,
                       ),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedAllure = value!;
-                    });
-                    _updateExercice();
-                  },
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: TriathlonDimens.paddingMedium,
-                      vertical: TriathlonDimens.paddingMedium,
                     ),
-                  ),
-                ),
-              ),
-            ],
-
-            // Pour swimming et cycling, afficher autre chose
-            if (widget.exercice.sportType == SportType.swimming) ...[
-              Text(
-                'Temps 100m (s)',
-                style: TextStyle(color: sportColor, fontSize: 16),
-              ),
-              const SizedBox(height: 5),
-              TextField(
-                controller: _vmaController, // Réutilise le même controller
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                onChanged: (_) => _updateExercice(),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedAllure = value!;
+                  });
+                  _updateExercice();
+                },
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: 'Ex: 1:45',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      TriathlonDimens.borderRadiusMedium,
-                    ),
-                    borderSide: BorderSide(
-                      color: sportColor,
-                      width: 2,
-                    ),
-                  ),
+                  border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: TriathlonDimens.paddingMedium,
                     vertical: TriathlonDimens.paddingMedium,
                   ),
                 ),
               ),
-              const SizedBox(height: 15),
-            ],
-
-            if (widget.exercice.sportType == SportType.cycling) ...[
-              Text(
-                'FTP (watts)',
-                style: TextStyle(color: sportColor, fontSize: 16),
-              ),
-              const SizedBox(height: 5),
-              TextField(
-                controller: _vmaController, // Réutilise le même controller
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                onChanged: (_) => _updateExercice(),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: 'Ex: 250.0',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      TriathlonDimens.borderRadiusMedium,
-                    ),
-                    borderSide: BorderSide(
-                      color: sportColor,
-                      width: 2,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: TriathlonDimens.paddingMedium,
-                    vertical: TriathlonDimens.paddingMedium,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 15),
-            ],
+            ),
 
             const SizedBox(height: 15),
 
@@ -597,12 +517,7 @@ class _ExerciceFormWidgetState extends State<ExerciceFormWidget>
       // Parser les valeurs
       String nom = _nomController.text.trim();
       if (nom.isEmpty) {
-        // Nom par défaut selon le sport
-        nom = widget.exercice.sportType == SportType.running
-            ? 'Exercice allure ${_selectedAllure + 1}'
-            : widget.exercice.sportType == SportType.swimming
-                ? 'Exercice natation'
-                : 'Exercice cyclisme';
+        nom = 'Exercice ${_selectedAllure + 1}';
       }
 
       double distance = double.parse(
@@ -610,10 +525,7 @@ class _ExerciceFormWidgetState extends State<ExerciceFormWidget>
       );
       int series = int.parse(_seriesController.text);
       int repetitions = int.parse(_repetitionsController.text);
-
-      // CORRECTION : Utiliser valeurReference
-      double valeurRef = double.parse(_vmaController.text.replaceAll(',', '.'));
-
+      double vma = double.parse(_vmaController.text.replaceAll(',', '.'));
       int reposRepSec = TriathlonExercice.parseTempsEnSecondes(
         _reposRepetitionsController.text,
       );
@@ -622,7 +534,7 @@ class _ExerciceFormWidgetState extends State<ExerciceFormWidget>
       );
 
       // Validations
-      if (distance <= 0 || series <= 0 || valeurRef <= 0) {
+      if (distance <= 0 || series <= 0 || vma <= 0) {
         return;
       }
 
@@ -635,18 +547,15 @@ class _ExerciceFormWidgetState extends State<ExerciceFormWidget>
         reposSerSec = 0;
       }
 
+      int allure = _selectedAllure + 1;
+
       // Mettre à jour l'exercice
       widget.exercice.nom = nom;
       widget.exercice.distance = distance;
       widget.exercice.nbSeries = series;
       widget.exercice.nbRepetitions = repetitions;
-      widget.exercice.valeurReference = valeurRef;
-
-      // CORRECTION : Allure uniquement pour running
-      if (widget.exercice.sportType == SportType.running) {
-        widget.exercice.allure = _selectedAllure + 1;
-      }
-
+      widget.exercice.valeurReference = vma;
+      widget.exercice.allure = allure;
       widget.exercice.reposRepetitionsSec = reposRepSec;
       widget.exercice.reposSeriesSec = reposSerSec;
 

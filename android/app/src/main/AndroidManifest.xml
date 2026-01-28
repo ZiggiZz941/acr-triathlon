@@ -1,16 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.triathlon.app">
-    
+    package="com.example.triathlon_app">
+
+    <!-- Permissions -->
     <uses-permission android:name="android.permission.INTERNET"/>
     
     <application
-        android:label="Triathlon App"
-        android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:allowBackup="false"
-        android:theme="@style/LaunchTheme">
+    android:label="ACR"
+    android:name="${applicationName}"
+    android:icon="@mipmap/ic_launcher"
+    android:roundIcon="@mipmap/ic_launcher"  
+    android:allowBackup="false"
+    android:theme="@style/LaunchTheme">
         
         <activity
             android:name=".MainActivity"
@@ -21,14 +21,11 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize">
             
-            <meta-data
-                android:name="io.flutter.embedding.android.NormalTheme"
-                android:resource="@style/NormalTheme"/>
-                
+            <!-- Splash screen -->
             <meta-data
                 android:name="io.flutter.embedding.android.SplashScreenDrawable"
                 android:resource="@drawable/launch_background"/>
-                
+            
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
