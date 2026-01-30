@@ -39,34 +39,25 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      overflow: hidden; /* Évite les barres de défilement */
     }
     
     .loading-container {
       text-align: center;
       color: white;
+      width: 100%; /* Prend toute la largeur */
+      max-width: 400px; /* Limite la largeur max */
+      padding: 20px;
+      box-sizing: border-box; /* Inclut le padding dans la largeur */
     }
     
     .loading-logo {
       width: 120px;
       height: 120px;
-      margin-bottom: 20px;
+      margin: 0 auto 20px auto; /* 'auto' centre horizontalement */
+      display: block; /* Nécessaire pour que margin: auto fonctionne */
       animation: pulse 2s infinite;
-      /* Style de secours */
-      background-color: white;
-      border-radius: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 40px;
-    }
-    
-    /* Si l'image ne charge pas, affiche un emoji */
-    .loading-logo:not([src]), .loading-logo[src=""] {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
-    
-    .loading-logo:not([src]):before, .loading-logo[src=""]:before {
-      content: "🏃";
+      object-fit: contain; /* Garde les proportions de l'image */
     }
     
     .loading-text {
