@@ -1,6 +1,6 @@
 {
     "name": "triathlon_app",
-    "short_name": "Triathlon",
+    "short_name": "ACR",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
@@ -21,7 +21,7 @@
             "sizes": "1080x1920",
             "type": "image/png",
             "form_factor": "narrow",
-            "label": "Menu principal Triathlon Coach"
+            "label": "Menu principal ACR"
         },
         {
             "src": "assets/screenshots/screenshot2.png",
