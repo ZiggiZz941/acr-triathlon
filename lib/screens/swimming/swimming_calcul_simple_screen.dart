@@ -56,25 +56,21 @@ class _SwimmingCalculSimpleScreenState extends State<SwimmingCalculSimpleScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadProfileData(); // AJOUT: Charger les données du profil
+    _loadProfileData();
   }
 
-  // AJOUT: Méthode pour charger les données du profil
   void _loadProfileData() {
     final dataManager = Provider.of<DataManager>(context, listen: false);
-    final profile = dataManager.getTriathlonProfile();
 
     // Charger le temps 400m du profil
-    if (profile.containsKey('swimming_400m_time')) {
-      final temps400m = profile['swimming_400m_time'] as double?;
-      if (temps400m != null) {
-        final tempsFormate = _formatSwimmingTime(temps400m);
-        setState(() {
-          _temps400mController.text = tempsFormate;
-          _useProfileTime = true;
-        });
-        print('Temps 400m chargé depuis profil: ${temps400m}s ($tempsFormate)');
-      }
+    final temps400m = dataManager.getSwimming400mTime();
+    if (temps400m != null) {
+      final tempsFormate = _formatSwimmingTime(temps400m);
+      setState(() {
+        _temps400mController.text = tempsFormate;
+        _useProfileTime = true;
+      });
+      print('Temps 400m chargé depuis profil: ${temps400m}s ($tempsFormate)');
     } else {
       setState(() {
         _temps400mController.text = '6:30.50'; // Valeur par défaut
@@ -108,9 +104,9 @@ class _SwimmingCalculSimpleScreenState extends State<SwimmingCalculSimpleScreen>
   @override
   Widget build(BuildContext context) {
     final dataManager = Provider.of<DataManager>(context);
-    final profile = dataManager.getTriathlonProfile();
-    final hasProfileTime = profile.containsKey('swimming_400m_time') &&
-        profile['swimming_400m_time'] != null;
+
+    // REMPLACER: Vérifier directement
+    final hasProfileTime = dataManager.getSwimming400mTime() != null;
 
     return Scaffold(
       backgroundColor: TriathlonColors.background,

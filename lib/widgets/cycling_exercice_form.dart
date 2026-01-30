@@ -126,36 +126,28 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadProfileData(); // MODIFIÉ: Charger toutes les données du profil
+    _loadProfileData();
   }
 
-  // MODIFIÉ: Charger le FTP ET le poids du profil
   void _loadProfileData() {
     final dataManager = Provider.of<DataManager>(context, listen: false);
-    final profile = dataManager.getTriathlonProfile();
 
     // Charger le FTP
-    if (profile.containsKey('cycling_ftp')) {
-      final ftp = profile['cycling_ftp'] as double?;
-      if (ftp != null) {
-        if (_ftpController.text.isEmpty || _useProfileFTP) {
-          setState(() {
-            _ftpController.text = ftp.toStringAsFixed(1);
-            _useProfileFTP = true;
-          });
-        }
-      }
-    }
-
-    // NOUVEAU: Charger le poids
-    if (profile.containsKey('poids')) {
-      final poids = profile['poids'] as double?;
-      if (poids != null) {
+    final ftp = dataManager.getCyclingFTP();
+    if (ftp != null) {
+      if (_ftpController.text.isEmpty || _useProfileFTP) {
         setState(() {
-          _poidsUtilisateur = poids;
+          _ftpController.text = ftp.toStringAsFixed(1);
+          _useProfileFTP = true;
         });
       }
     }
+
+    // Charger le poids
+    final poids = dataManager.getPoids();
+    setState(() {
+      _poidsUtilisateur = poids;
+    });
   }
 
   @override
@@ -211,11 +203,11 @@ class _CyclingExerciceFormState extends State<CyclingExerciceForm>
   @override
   Widget build(BuildContext context) {
     final dataManager = Provider.of<DataManager>(context);
-    final profile = dataManager.getTriathlonProfile();
-    final hasProfileFTP =
-        profile.containsKey('cycling_ftp') && profile['cycling_ftp'] != null;
-    final hasProfilePoids = // NOUVEAU
-        profile.containsKey('poids') && profile['poids'] != null;
+
+    // REMPLACER: Vérifier directement les valeurs
+    final hasProfileFTP = dataManager.getCyclingFTP() != null;
+    final hasProfilePoids =
+        dataManager.getPoids() != 70.0; // 70.0 est la valeur par défau
 
     final sportColor = TriathlonColors.cycling;
 

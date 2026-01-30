@@ -117,21 +117,20 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
 
   void _loadProfileVMA() {
     final dataManager = Provider.of<DataManager>(context, listen: false);
-    final profile = dataManager.getTriathlonProfile();
 
-    if (profile.containsKey('running_vma')) {
-      final vma = profile['running_vma'] as double?;
-      if (vma != null) {
-        if (_vmaController.text.isEmpty || _useProfileVMA) {
-          setState(() {
-            _vmaController.text = vma.toStringAsFixed(1);
-            _useProfileVMA = true;
-          });
+    // REMPLACER getTriathlonProfile() par getRunningVMA()
+    final vma = dataManager.getRunningVMA();
 
-          if (mounted && _distanceController.text.isNotEmpty) {
-            widget.exercice.valeurReference = vma;
-            _updateExercice();
-          }
+    if (vma != null) {
+      if (_vmaController.text.isEmpty || _useProfileVMA) {
+        setState(() {
+          _vmaController.text = vma.toStringAsFixed(1);
+          _useProfileVMA = true;
+        });
+
+        if (mounted && _distanceController.text.isNotEmpty) {
+          widget.exercice.valeurReference = vma;
+          _updateExercice();
         }
       }
     } else {
@@ -162,9 +161,9 @@ class _RunningExerciceFormState extends State<RunningExerciceForm>
   @override
   Widget build(BuildContext context) {
     final dataManager = Provider.of<DataManager>(context);
-    final profile = dataManager.getTriathlonProfile();
-    final hasProfileVMA =
-        profile.containsKey('running_vma') && profile['running_vma'] != null;
+
+    // REMPLACER: Vérifier si la VMA existe
+    final hasProfileVMA = dataManager.getRunningVMA() != null;
 
     final sportColor = TriathlonColors.running;
 

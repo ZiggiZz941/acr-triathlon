@@ -3,8 +3,9 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"flutter_bootstrap.js": "166d1ad629d7736aeabe33c65fdca7e8",
-"main.dart.js": "499e285918b4b9cbdddc7d4216bdb5d6",
+const RESOURCES = {"triathlon-app.zip": "0a659f7bd66125b8140c4c0a8b3ffc37",
+"flutter_bootstrap.js": "5712a20394cf31161730afe6398f1dbe",
+"main.dart.js": "ea4f679b1b680001a774df82cead05d5",
 "index.html": "895aa3c3a1118eaa643e475d61babeef",
 "/": "895aa3c3a1118eaa643e475d61babeef",
 "version.json": "18f2955ee45f963c9da9285396e1892f",
@@ -29,7 +30,7 @@ const RESOURCES = {"flutter_bootstrap.js": "166d1ad629d7736aeabe33c65fdca7e8",
 "icons/Icon-192.png": "b1d81505c9bb4cda8f8274f4efaebfdc",
 "manifest.json": "df527afbfe84b4282416157fcdb66d5b",
 "assets/NOTICES": "b0b68971d5c063315e6765d2fb71e90e",
-"assets/fonts/MaterialIcons-Regular.otf": "b92e843fef98b613a70b0bffc705ad51",
+"assets/fonts/MaterialIcons-Regular.otf": "d50c8859c3a4d2c028581bde506ef6f5",
 "assets/AssetManifest.bin": "159bffe726e15e5bb7b93bf96252ead5",
 "assets/AssetManifest.bin.json": "6b4a0b0c25a192ec2d1f0758ec64b35b",
 "assets/FontManifest.json": "dc3d03800ccca4601324923c0b1d6d57",

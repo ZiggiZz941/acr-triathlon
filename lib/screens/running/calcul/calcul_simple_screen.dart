@@ -52,30 +52,26 @@ class _CalculSimpleScreenState extends State<CalculSimpleScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadProfileData(); // AJOUT: Charger les données du profil
+    _loadProfileData();
   }
 
-  // AJOUT: Méthode pour charger les données du profil
   void _loadProfileData() {
     final dataManager = Provider.of<DataManager>(context, listen: false);
-    final profile = dataManager.getTriathlonProfile();
 
     // Charger la VMA du profil
-    if (profile.containsKey('running_vma')) {
-      final vma = profile['running_vma'] as double?;
-      if (vma != null) {
-        setState(() {
-          _vitesseController.text = vma.toStringAsFixed(1);
-          _useProfileVMA = true;
-        });
-        print('VMA chargée depuis profil: ${vma} km/h');
-      }
+    final vma = dataManager.getRunningVMA();
+    if (vma != null) {
+      setState(() {
+        _vitesseController.text = vma.toStringAsFixed(1);
+        _useProfileVMA = true;
+      });
+      print('VMA chargée depuis profil: ${vma} km/h');
     } else {
       setState(() {
         _vitesseController.text = '16.0'; // Valeur par défaut
         _useProfileVMA = false;
       });
-      print('VMA par défaut utilisée: 16.0 km/h');
+      print('VMA par défaut utilisé: 16.0 km/h');
     }
   }
 
@@ -90,9 +86,9 @@ class _CalculSimpleScreenState extends State<CalculSimpleScreen>
   @override
   Widget build(BuildContext context) {
     final dataManager = Provider.of<DataManager>(context);
-    final profile = dataManager.getTriathlonProfile();
-    final hasProfileVMA =
-        profile.containsKey('running_vma') && profile['running_vma'] != null;
+
+    // REMPLACER: Vérifier directement
+    final hasProfileVMA = dataManager.getRunningVMA() != null;
 
     return Scaffold(
       backgroundColor: TriathlonColors.background,

@@ -40,11 +40,10 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
     final dataManager = Provider.of<DataManager>(context, listen: false);
 
     try {
-      // Charger les données utilisateur de manière asynchrone
+      // Charger les données utilisateur
       final nom = await dataManager.getUserNom();
       final prenom = await dataManager.getUserPrenom();
 
-      // Mettre à jour les contrôleurs
       if (mounted) {
         setState(() {
           _nomController.text = nom;
@@ -52,36 +51,31 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
         });
       }
 
-      // Charger le profil triathlon
-      final profile = dataManager.getTriathlonProfile();
-
-      // NOUVEAU: Initialiser le temps de natation séparé en minutes/secondes/centièmes
-      if (profile['swimming_400m_time'] != null) {
-        final swimmingTime = profile['swimming_400m_time'] as double;
+      // Charger le temps de natation
+      final swimmingTime = dataManager.getSwimming400mTime();
+      if (swimmingTime != null) {
         _initializeSwimmingTime(swimmingTime);
       } else {
-        // Valeurs par défaut
         _swimmingMinutesController.text = '6';
         _swimmingSecondesController.text = '30';
         _swimmingCentiemesController.text = '00';
       }
 
-      if (profile['cycling_ftp'] != null) {
-        _cyclingFtpController.text = profile['cycling_ftp'].toStringAsFixed(0);
+      // Charger FTP
+      final ftp = dataManager.getCyclingFTP();
+      if (ftp != null) {
+        _cyclingFtpController.text = ftp.toStringAsFixed(0);
       }
 
-      if (profile['running_vma'] != null) {
-        _runningVmaController.text = profile['running_vma'].toStringAsFixed(1);
+      // Charger VMA
+      final vma = dataManager.getRunningVMA();
+      if (vma != null) {
+        _runningVmaController.text = vma.toStringAsFixed(1);
       }
 
-      // Charger le poids du profil
-      if (profile['poids'] != null) {
-        final poids = profile['poids'] as double;
-        _poidsController.text = poids.toStringAsFixed(1);
-      } else {
-        // Valeur par défaut
-        _poidsController.text = '70.0';
-      }
+      // Charger le poids
+      final poids = dataManager.getPoids();
+      _poidsController.text = poids.toStringAsFixed(1);
 
       if (mounted) {
         setState(() {
@@ -887,7 +881,6 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
     double? swimmingTime = _convertirSwimmingTimeEnSecondes();
     if (swimmingTime != null) {
       profile['swimming_400m_time'] = swimmingTime;
-      print("Temps natation sauvegardé: $swimmingTime secondes");
     }
 
     // FTP cyclisme
@@ -896,7 +889,6 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
           double.tryParse(_cyclingFtpController.text.replaceAll(',', '.'));
       if (ftp != null) {
         profile['cycling_ftp'] = ftp;
-        print("FTP sauvegardé: $ftp watts");
       }
     }
 
@@ -906,7 +898,6 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
           double.tryParse(_runningVmaController.text.replaceAll(',', '.'));
       if (vma != null) {
         profile['running_vma'] = vma;
-        print("VMA sauvegardée: $vma km/h");
       }
     }
 
@@ -916,16 +907,11 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
           double.tryParse(_poidsController.text.replaceAll(',', '.'));
       if (poids != null) {
         profile['poids'] = poids;
-        print("Poids sauvegardé: $poids kg");
       }
     }
 
-    // MODIFICATION IMPORTANTE : Toujours sauvegarder même si certains champs sont vides
-    // Sauvegarder le profil (cela va écrire dans le fichier JSON)
+    // Sauvegarder le profil
     await dataManager.saveTriathlonProfile(profile);
-
-    // DEBUG : Afficher l'état des données
-    await dataManager.debugPrintData();
   }
 
   void _clearForm() {

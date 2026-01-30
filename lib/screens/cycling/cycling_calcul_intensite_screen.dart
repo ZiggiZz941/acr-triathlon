@@ -69,41 +69,30 @@ class _CyclingCalculIntensiteScreenState
 
   void _loadProfileData() {
     final dataManager = Provider.of<DataManager>(context, listen: false);
-    final profile = dataManager.getTriathlonProfile();
 
     // Charger la FTP du profil
-    if (profile.containsKey('cycling_ftp')) {
-      final ftp = profile['cycling_ftp'] as double?;
-      if (ftp != null) {
-        setState(() {
-          _ftpController.text = ftp.toStringAsFixed(0);
-          _useProfileFTP = true;
-        });
-        print('FTP chargée depuis profil: ${ftp} watts');
-      }
+    final ftp = dataManager.getCyclingFTP();
+    if (ftp != null) {
+      setState(() {
+        _ftpController.text = ftp.toStringAsFixed(0);
+        _useProfileFTP = true;
+      });
+      print('FTP chargée depuis profil: ${ftp} watts');
     } else {
       setState(() {
-        _ftpController.text = '250'; // Valeur par défaut
+        _ftpController.text = '250';
         _useProfileFTP = false;
       });
       print('FTP par défaut utilisé: 250 watts');
     }
 
     // Charger le poids du profil
-    if (profile.containsKey('poids')) {
-      final poids = profile['poids'] as double? ?? 70.0;
-      setState(() {
-        _poidsController.text = poids.toStringAsFixed(1);
-        _useProfileWeight = true;
-      });
-      print('Poids chargé depuis profil: ${poids}kg');
-    } else {
-      setState(() {
-        _poidsController.text = '70.0';
-        _useProfileWeight = false;
-      });
-      print('Poids par défaut utilisé: 70.0kg');
-    }
+    final poids = dataManager.getPoids();
+    setState(() {
+      _poidsController.text = poids.toStringAsFixed(1);
+      _useProfileWeight = true;
+    });
+    print('Poids chargé depuis profil: ${poids}kg');
   }
 
   @override
@@ -120,11 +109,10 @@ class _CyclingCalculIntensiteScreenState
   @override
   Widget build(BuildContext context) {
     final dataManager = Provider.of<DataManager>(context);
-    final profile = dataManager.getTriathlonProfile();
-    final hasProfileFTP =
-        profile.containsKey('cycling_ftp') && profile['cycling_ftp'] != null;
-    final hasProfileWeight =
-        profile.containsKey('poids') && profile['poids'] != null;
+
+    // REMPLACER
+    final hasProfileFTP = dataManager.getCyclingFTP() != null;
+    final hasProfileWeight = dataManager.getPoids() != 70.0;
 
     return Scaffold(
       backgroundColor: TriathlonColors.background,
