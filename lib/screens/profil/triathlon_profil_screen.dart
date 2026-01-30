@@ -883,38 +883,49 @@ class _TriathlonProfilScreenState extends State<TriathlonProfilScreen> {
     // Préparer le profil triathlon
     Map<String, dynamic> profile = {};
 
-    // NOUVEAU: Sauvegarder le temps de natation converti
+    // Temps de natation
     double? swimmingTime = _convertirSwimmingTimeEnSecondes();
     if (swimmingTime != null) {
       profile['swimming_400m_time'] = swimmingTime;
+      print("Temps natation sauvegardé: $swimmingTime secondes");
     }
 
+    // FTP cyclisme
     if (_cyclingFtpController.text.isNotEmpty) {
       double? ftp =
           double.tryParse(_cyclingFtpController.text.replaceAll(',', '.'));
       if (ftp != null) {
         profile['cycling_ftp'] = ftp;
+        print("FTP sauvegardé: $ftp watts");
       }
     }
 
+    // VMA course
     if (_runningVmaController.text.isNotEmpty) {
       double? vma =
           double.tryParse(_runningVmaController.text.replaceAll(',', '.'));
       if (vma != null) {
         profile['running_vma'] = vma;
+        print("VMA sauvegardée: $vma km/h");
       }
     }
 
+    // Poids
     if (_poidsController.text.isNotEmpty) {
       double? poids =
           double.tryParse(_poidsController.text.replaceAll(',', '.'));
       if (poids != null) {
         profile['poids'] = poids;
+        print("Poids sauvegardé: $poids kg");
       }
     }
 
-    // Sauvegarder le profil
+    // MODIFICATION IMPORTANTE : Toujours sauvegarder même si certains champs sont vides
+    // Sauvegarder le profil (cela va écrire dans le fichier JSON)
     await dataManager.saveTriathlonProfile(profile);
+
+    // DEBUG : Afficher l'état des données
+    await dataManager.debugPrintData();
   }
 
   void _clearForm() {
