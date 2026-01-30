@@ -1,0 +1,98 @@
+{
+    "name": "triathlon_app",
+    "short_name": "ACR",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#FFFFFF",
+    "theme_color": "#0175C2",
+    "description": "Application d'entraînement pour triathlon - Natation, Cyclisme, Course à pied",
+    "orientation": "portrait-primary",
+    "prefer_related_applications": false,
+    "categories": [
+        "health",
+        "sports",
+        "lifestyle"
+    ],
+    "lang": "fr-FR",
+    "dir": "ltr",
+    "screenshots": [
+        {
+            "src": "assets/screenshots/screenshot1.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Menu principal ACR"
+        },
+        {
+            "src": "assets/screenshots/screenshot2.png",
+            "sizes": "1080x1920",
+            "type": "image/png",
+            "form_factor": "narrow",
+            "label": "Suivi des séances d'entraînement"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Nouvelle séance course",
+            "short_name": "Course",
+            "description": "Créer une nouvelle séance de course à pied",
+            "url": "/running/create",
+            "icons": [
+                {
+                    "src": "assets/images/running_icon.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Nouvelle séance vélo",
+            "short_name": "Vélo",
+            "description": "Créer une nouvelle séance de cyclisme",
+            "url": "/cycling/create",
+            "icons": [
+                {
+                    "src": "assets/images/cycling_icon.png",
+                    "sizes": "96x96"
+                }
+            ]
+        },
+        {
+            "name": "Nouvelle séance natation",
+            "short_name": "Natation",
+            "description": "Créer une nouvelle séance de natation",
+            "url": "/swimming/create",
+            "icons": [
+                {
+                    "src": "assets/images/swimming_icon.png",
+                    "sizes": "96x96"
+                }
+            ]
+        }
+    ],
+    "related_applications": [],
+    "scope": "/",
+    "icons": [
+        {
+            "src": "icons/Icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "icons/Icon-maskable-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "maskable"
+        },
+        {
+            "src": "icons/Icon-maskable-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}

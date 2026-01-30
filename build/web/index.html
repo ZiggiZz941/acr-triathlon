@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="ACR - Application d'entraînement du club d'athlétisme de Romorantin">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="ACR">
+  
+  <!-- Icônes iOS -->
+  <link rel="apple-touch-icon" href="assets/images/running_icon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="assets/images/running_icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="assets/images/running_icon.png">
+
+  <!-- Favicon et icônes Android -->
+  <link rel="icon" type="image/png" href="assets/images/running_icon.png"/>
+  <link rel="icon" sizes="192x192" href="assets/images/running_icon.png">
+  <link rel="icon" sizes="512x512" href="assets/images/running_icon.png">
+
+  <title>ACR</title>
+  <link rel="manifest" href="manifest.json">
+  
+  <!-- Thème couleur selon le sport -->
+  <meta name="theme-color" content="#0175C2" id="theme-color-meta">
+  
+  <style>
+    /* Style pour le chargement */
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .loading-container {
+      text-align: center;
+      color: white;
+    }
+    
+    .loading-logo {
+      width: 120px;
+      height: 120px;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+    
+    .loading-text {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    .loading-subtext {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Cache le contenu Flutter pendant le chargement */
+    #flutter-app {
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    
+    #flutter-app.loaded {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-container" id="loading-screen">
+    <img src="assets/images/running_icon.png" alt="Triathlon" class="loading-logo">
+    <div class="loading-text">ACR</div>
+    <div class="loading-subtext">Chargement de l'application...</div>
+  </div>
+  
+  <div id="flutter-app">
+    <script src="flutter_bootstrap.js" async></script>
+  </div>
+  
+  <script>
+    // Script pour gérer l'affichage pendant le chargement
+    window.addEventListener('load', function() {
+      // Cache l'écran de chargement quand Flutter est prêt
+      setTimeout(function() {
+        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('flutter-app').classList.add('loaded');
+      }, 1000);
+    });
+    
+    // Change la couleur de thème selon le sport
+    function updateThemeColor(color) {
+      document.getElementById('theme-color-meta').content = color;
+    }
+  </script>
+</body>
+</html>
