@@ -54,8 +54,8 @@ class _CreationSeanceIntensiteAvanceeScreenState
           // Header
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(
-              top: 50,
+            padding: EdgeInsets.only(
+              top: MediaQuery.of(context).padding.top,
               bottom: 20,
               left: TriathlonDimens.paddingLarge,
               right: TriathlonDimens.paddingLarge,
@@ -78,25 +78,65 @@ class _CreationSeanceIntensiteAvanceeScreenState
                 ),
               ],
             ),
-            child: Column(
-              children: [
-                Text(
-                  widget.sportType.creationTitle,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  // Barre d'en-tête avec bouton retour et titre
+                  Row(
+                    children: [
+                      // Bouton retour
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Colors.white,
+                          size: TriathlonDimens.iconSizeLarge,
+                        ),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 40,
+                          minHeight: 40,
+                        ),
+                      ),
+                      const SizedBox(width: TriathlonDimens.paddingSmall),
+
+                      // Titre centré
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Text(
+                              widget.sportType.creationTitle,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Version intensité - Multiple exercices',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 14,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Espace pour aligner le titre au centre
+                      SizedBox(
+                        width: 40 + TriathlonDimens.paddingSmall,
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Version intensité - Multiple exercices',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 14,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 

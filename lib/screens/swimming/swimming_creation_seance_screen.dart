@@ -43,6 +43,8 @@ class _SwimmingCreationSeanceScreenState
             padding: EdgeInsets.only(
               left: TriathlonDimens.paddingLarge,
               right: TriathlonDimens.paddingLarge,
+              top: MediaQuery.of(context).padding.top,
+              bottom: TriathlonDimens.paddingLarge,
             ),
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -64,37 +66,76 @@ class _SwimmingCreationSeanceScreenState
               ],
             ),
             child: SafeArea(
+              bottom: false,
               child: Column(
                 children: [
-                  Icon(
-                    Icons.pool,
-                    size: TriathlonDimens.iconSizeXXLarge,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(height: TriathlonDimens.paddingMedium),
-                  Text(
-                    'Création de séance - Natation',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: TriathlonDimens.fontSizeXXLarge,
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black.withOpacity(0.3),
-                          blurRadius: 3,
+                  // Barre d'en-tête avec bouton retour et titre
+                  Row(
+                    children: [
+                      // Bouton retour
+                      IconButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Colors.white,
+                          size: TriathlonDimens.iconSizeLarge,
                         ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: TriathlonDimens.paddingXSmall),
-                  Text(
-                    'Concevez votre programme d\'entraînement',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: TriathlonDimens.fontSizeMedium,
-                    ),
-                    textAlign: TextAlign.center,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 40,
+                          minHeight: 40,
+                        ),
+                      ),
+                      const SizedBox(width: TriathlonDimens.paddingSmall),
+
+                      // Titre centré
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.pool,
+                              size: TriathlonDimens.iconSizeXXLarge,
+                              color: Colors.white,
+                            ),
+                            const SizedBox(
+                                height: TriathlonDimens.paddingSmall),
+                            Text(
+                              'Création de séance - Natation',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: TriathlonDimens.fontSizeXXLarge,
+                                fontWeight: FontWeight.bold,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 3,
+                                  ),
+                                ],
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(
+                                height: TriathlonDimens.paddingXSmall),
+                            Text(
+                              'Concevez votre programme d\'entraînement',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: TriathlonDimens.fontSizeMedium,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Espace pour aligner le titre au centre
+                      SizedBox(
+                        width: 40 + TriathlonDimens.paddingSmall,
+                      ),
+                    ],
                   ),
                 ],
               ),

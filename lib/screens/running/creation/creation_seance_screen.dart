@@ -34,294 +34,327 @@ class _CreationSeanceScreenState extends State<CreationSeanceScreen> {
     return Scaffold(
       body: Container(
         color: const Color.fromARGB(255, 245, 245, 245),
-        child: SafeArea(
-          bottom: false,
-          child: Column(
-            children: [
-              // Header
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(
-                  top: 20,
-                  bottom: 20,
-                  left: TriathlonDimens.paddingLarge,
-                  right: TriathlonDimens.paddingLarge,
+        child: Column(
+          children: [
+            // Header
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).padding.top,
+                bottom: 20,
+                left: TriathlonDimens.paddingLarge,
+                right: TriathlonDimens.paddingLarge,
+              ),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: TriathlonColors.runningGradient,
                 ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: TriathlonColors.runningGradient,
-                  ),
-                  borderRadius: const BorderRadius.only(
-                    bottomLeft:
-                        Radius.circular(TriathlonDimens.borderRadiusXLarge),
-                    bottomRight:
-                        Radius.circular(TriathlonDimens.borderRadiusXLarge),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
+                borderRadius: const BorderRadius.only(
+                  bottomLeft:
+                      Radius.circular(TriathlonDimens.borderRadiusXLarge),
+                  bottomRight:
+                      Radius.circular(TriathlonDimens.borderRadiusXLarge),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                bottom: false,
                 child: Column(
                   children: [
-                    Text(
-                      'Création de séance',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: TriathlonDimens.fontSizeXXLarge,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Concevez votre programme d\'entraînement',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                        fontSize: TriathlonDimens.fontSizeMedium,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Contenu avec SingleChildScrollView
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewPadding.bottom + 100,
-                  ),
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.all(TriathlonDimens.paddingMedium),
-                    child: Column(
+                    // Barre d'en-tête avec bouton retour et titre
+                    Row(
                       children: [
-                        // Carte nom de séance
-                        Card(
-                          elevation: TriathlonDimens.elevationXLarge,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              TriathlonDimens.borderRadiusLarge,
-                            ),
+                        // Bouton retour
+                        IconButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          icon: Icon(
+                            Icons.arrow_back_ios_new,
+                            color: Colors.white,
+                            size: TriathlonDimens.iconSizeLarge,
                           ),
-                          color: Colors.white,
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                              TriathlonDimens.paddingLarge,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Nom de la séance',
-                                  style: TextStyle(
-                                    color: TriathlonColors.running,
-                                    fontSize: TriathlonDimens.fontSizeXLarge,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(
-                                    height: TriathlonDimens.paddingMedium),
-                                TextField(
-                                  controller: _nomSeanceController,
-                                  decoration: InputDecoration(
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    hintText:
-                                        'Ex: Séance endurance fondamentale',
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(
-                                        TriathlonDimens.borderRadiusMedium,
-                                      ),
-                                      borderSide: BorderSide(
-                                        color: TriathlonColors.running,
-                                        width: TriathlonDimens.borderWidth,
-                                      ),
-                                    ),
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: TriathlonDimens.paddingMedium,
-                                      vertical: TriathlonDimens.paddingMedium,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(
+                            minWidth: 40,
+                            minHeight: 40,
                           ),
                         ),
+                        const SizedBox(width: TriathlonDimens.paddingSmall),
 
-                        const SizedBox(height: TriathlonDimens.paddingLarge),
-
-                        // Titre exercices - CORRECTION ICI
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: TriathlonDimens.paddingSmall,
-                          ),
+                        // Titre centré
+                        Expanded(
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Exercices',
-                                      style: TextStyle(
-                                        color: TriathlonColors.running,
-                                        fontSize:
-                                            TriathlonDimens.fontSizeXXLarge,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: TriathlonDimens.paddingMedium,
-                                      vertical: TriathlonDimens.paddingSmall,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: TriathlonColors.running
-                                          .withOpacity(0.15),
-                                      borderRadius: BorderRadius.circular(
-                                        TriathlonDimens.borderRadiusLarge,
-                                      ),
-                                    ),
-                                    child: Text(
-                                      _listeExercices.length == 1
-                                          ? '1 exercice'
-                                          : '${_listeExercices.length} exercices',
-                                      style: TextStyle(
-                                        color: TriathlonColors.running,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize:
-                                            TriathlonDimens.fontSizeMedium,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                              Text(
+                                'Création de séance',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: TriathlonDimens.fontSizeXXLarge,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Concevez votre programme d\'entraînement',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: TriathlonDimens.fontSizeMedium,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ],
                           ),
                         ),
 
-                        const SizedBox(height: TriathlonDimens.paddingMedium),
-
-                        // Liste des exercices
-                        AnimatedList(
-                          key: _listKey,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          initialItemCount: _listeExercices.length,
-                          itemBuilder: (context, index, animation) {
-                            return SizeTransition(
-                              sizeFactor: animation,
-                              child: RunningExerciceForm(
-                                key: ValueKey(_listeExercices[index].id),
-                                exercice: _listeExercices[index],
-                                onCalculer: (exercice) {
-                                  setState(() {
-                                    _updateExerciceInList(exercice);
-                                  });
-                                },
-                                onSupprimer: () {
-                                  _supprimerExercice(index);
-                                },
-                              ),
-                            );
-                          },
+                        // Espace pour aligner le titre au centre
+                        SizedBox(
+                          width: 40 + TriathlonDimens.paddingSmall,
                         ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
 
-                        // Bouton Ajouter (version mobile pour ajouter plus facilement)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            vertical: TriathlonDimens.paddingMedium,
+            // Contenu avec SingleChildScrollView
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewPadding.bottom + 100,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(TriathlonDimens.paddingMedium),
+                  child: Column(
+                    children: [
+                      // Carte nom de séance
+                      Card(
+                        elevation: TriathlonDimens.elevationXLarge,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(
+                            TriathlonDimens.borderRadiusLarge,
                           ),
-                          child: SizedBox(
-                            width: double.infinity,
-                            height: TriathlonDimens.buttonHeight,
-                            child: ElevatedButton.icon(
-                              onPressed: _ajouterExercice,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: TriathlonColors.running,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    TriathlonDimens.borderRadiusXLarge,
-                                  ),
-                                ),
-                                elevation: TriathlonDimens.elevationMedium,
-                              ),
-                              icon: const Icon(Icons.add, size: 24),
-                              label: const Text(
-                                'AJOUTER UN EXERCICE',
+                        ),
+                        color: Colors.white,
+                        child: Padding(
+                          padding: const EdgeInsets.all(
+                            TriathlonDimens.paddingLarge,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Nom de la séance',
                                 style: TextStyle(
-                                  fontSize: 16,
+                                  color: TriathlonColors.running,
+                                  fontSize: TriathlonDimens.fontSizeXLarge,
                                   fontWeight: FontWeight.bold,
                                 ),
+                              ),
+                              const SizedBox(
+                                  height: TriathlonDimens.paddingMedium),
+                              TextField(
+                                controller: _nomSeanceController,
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  hintText: 'Ex: Séance endurance fondamentale',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(
+                                      TriathlonDimens.borderRadiusMedium,
+                                    ),
+                                    borderSide: BorderSide(
+                                      color: TriathlonColors.running,
+                                      width: TriathlonDimens.borderWidth,
+                                    ),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: TriathlonDimens.paddingMedium,
+                                    vertical: TriathlonDimens.paddingMedium,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: TriathlonDimens.paddingLarge),
+
+                      // Titre exercices - CORRECTION ICI
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: TriathlonDimens.paddingSmall,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Exercices',
+                                    style: TextStyle(
+                                      color: TriathlonColors.running,
+                                      fontSize: TriathlonDimens.fontSizeXXLarge,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: TriathlonDimens.paddingMedium,
+                                    vertical: TriathlonDimens.paddingSmall,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: TriathlonColors.running
+                                        .withOpacity(0.15),
+                                    borderRadius: BorderRadius.circular(
+                                      TriathlonDimens.borderRadiusLarge,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    _listeExercices.length == 1
+                                        ? '1 exercice'
+                                        : '${_listeExercices.length} exercices',
+                                    style: TextStyle(
+                                      color: TriathlonColors.running,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: TriathlonDimens.fontSizeMedium,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: TriathlonDimens.paddingMedium),
+
+                      // Liste des exercices
+                      AnimatedList(
+                        key: _listKey,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        initialItemCount: _listeExercices.length,
+                        itemBuilder: (context, index, animation) {
+                          return SizeTransition(
+                            sizeFactor: animation,
+                            child: RunningExerciceForm(
+                              key: ValueKey(_listeExercices[index].id),
+                              exercice: _listeExercices[index],
+                              onCalculer: (exercice) {
+                                setState(() {
+                                  _updateExerciceInList(exercice);
+                                });
+                              },
+                              onSupprimer: () {
+                                _supprimerExercice(index);
+                              },
+                            ),
+                          );
+                        },
+                      ),
+
+                      // Bouton Ajouter (version mobile pour ajouter plus facilement)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: TriathlonDimens.paddingMedium,
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          height: TriathlonDimens.buttonHeight,
+                          child: ElevatedButton.icon(
+                            onPressed: _ajouterExercice,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: TriathlonColors.running,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                  TriathlonDimens.borderRadiusXLarge,
+                                ),
+                              ),
+                              elevation: TriathlonDimens.elevationMedium,
+                            ),
+                            icon: const Icon(Icons.add, size: 24),
+                            label: const Text(
+                              'AJOUTER UN EXERCICE',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
                         ),
+                      ),
 
-                        // Espace pour les boutons en bas
-                        SizedBox(
-                          height: TriathlonDimens.buttonHeight * 2 + 50,
-                        ),
-                      ],
+                      // Espace pour les boutons en bas
+                      SizedBox(
+                        height: TriathlonDimens.buttonHeight * 2 + 50,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Bouton Sauvegarder fixe en bas
+            Container(
+              padding: EdgeInsets.only(
+                left: TriathlonDimens.paddingLarge,
+                right: TriathlonDimens.paddingLarge,
+                top: TriathlonDimens.paddingMedium,
+                bottom: MediaQuery.of(context).viewPadding.bottom +
+                    TriathlonDimens.paddingMedium,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                height: TriathlonDimens.buttonHeight,
+                child: ElevatedButton(
+                  onPressed: _sauvegarderSeance,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: TriathlonColors.running,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        TriathlonDimens.borderRadiusXLarge,
+                      ),
+                    ),
+                    elevation: TriathlonDimens.elevationXLarge,
+                  ),
+                  child: const Text(
+                    'SAUVEGARDER LA SÉANCE',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
-
-              // Bouton Sauvegarder fixe en bas
-              Container(
-                padding: EdgeInsets.only(
-                  left: TriathlonDimens.paddingLarge,
-                  right: TriathlonDimens.paddingLarge,
-                  top: TriathlonDimens.paddingMedium,
-                  bottom: MediaQuery.of(context).viewPadding.bottom +
-                      TriathlonDimens.paddingMedium,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: TriathlonDimens.buttonHeight,
-                  child: ElevatedButton(
-                    onPressed: _sauvegarderSeance,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: TriathlonColors.running,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(
-                          TriathlonDimens.borderRadiusXLarge,
-                        ),
-                      ),
-                      elevation: TriathlonDimens.elevationXLarge,
-                    ),
-                    child: const Text(
-                      'SAUVEGARDER LA SÉANCE',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
