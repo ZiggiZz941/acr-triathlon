@@ -9,8 +9,8 @@ class TriathlonResultat {
   int serieIndex;
   int repetitionIndex;
   double? tempsReel;
-  double tempsAttenduMin; // NOUVEAU: temps attendu minimum
-  double tempsAttenduMax; // NOUVEAU: temps attendu maximum
+  double tempsAttenduMin;
+  double tempsAttenduMax;
   double? distanceReelle;
   int? fcMoyenne;
   int? fcMax;
@@ -116,9 +116,11 @@ class TriathlonResultat {
   String get statutPerformance {
     if (tempsReel == null) return 'Non mesuré';
 
-    if (tempsReel! <= tempsAttenduMin) {
+    final pourcentage = pourcentagePerformance;
+
+    if (pourcentage >= 110) {
       return 'Très rapide';
-    } else if (tempsReel! <= tempsAttenduMax) {
+    } else if (pourcentage >= 100) {
       return 'Dans les temps';
     } else {
       return 'Trop lent';
@@ -128,9 +130,11 @@ class TriathlonResultat {
   IconData get iconePerformance {
     if (tempsReel == null) return Icons.timer;
 
-    if (tempsReel! <= tempsAttenduMin) {
+    final pourcentage = pourcentagePerformance;
+
+    if (pourcentage >= 110) {
       return Icons.rocket_launch;
-    } else if (tempsReel! <= tempsAttenduMax) {
+    } else if (pourcentage >= 100) {
       return Icons.check_circle;
     } else {
       return Icons.warning;
@@ -140,9 +144,11 @@ class TriathlonResultat {
   Color get couleurPerformance {
     if (tempsReel == null) return Colors.grey;
 
-    if (tempsReel! <= tempsAttenduMin) {
+    final pourcentage = pourcentagePerformance;
+
+    if (pourcentage >= 110) {
       return Colors.blue;
-    } else if (tempsReel! <= tempsAttenduMax) {
+    } else if (pourcentage >= 100) {
       return Colors.green;
     } else {
       return Colors.red;
@@ -152,14 +158,23 @@ class TriathlonResultat {
   double get pourcentagePerformance {
     if (tempsReel == null || tempsAttenduMin <= 0) return 0;
 
-    if (tempsReel! <= tempsAttenduMin) {
+    // Calcul du pourcentage par rapport au temps minimum
+    // Si plus rapide que le temps min: pourcentage > 100%
+    // Si égal au temps min: pourcentage = 100%
+    // Si entre temps min et max: pourcentage entre 95% et 100%
+    // Si plus lent que temps max: pourcentage < 95%
+
+    if (tempsReel! < tempsAttenduMin) {
+      // Plus rapide que le temps min
       return (tempsAttenduMin / tempsReel! * 100).clamp(100, 150).toDouble();
     } else if (tempsReel! <= tempsAttenduMax) {
-      return 95 +
-          ((tempsAttenduMax - tempsReel!) /
+      // Entre temps min et temps max
+      return 100 -
+          ((tempsReel! - tempsAttenduMin) /
               (tempsAttenduMax - tempsAttenduMin) *
               5);
     } else {
+      // Plus lent que le temps max
       return 95 - ((tempsReel! - tempsAttenduMax) / tempsAttenduMax * 15);
     }
   }

@@ -395,28 +395,34 @@ class _SaisieResultatScreenState extends State<SaisieResultatScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       color: Colors.white,
-      child: SizedBox(
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: _sauvegarderResultats,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: sportColor,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+      child: Column(
+        children: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _sauvegarderResultats,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sportColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: Text(
+                casesRemplies > 0
+                    ? 'MODIFIER LES RÉSULTATS ($casesRemplies/$totalCases)'
+                    : 'SAUVEGARDER LES RÉSULTATS',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
-          child: Text(
-            casesRemplies > 0
-                ? 'MODIFIER LES RÉSULTATS ($casesRemplies/$totalCases)'
-                : 'SAUVEGARDER LES RÉSULTATS',
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
+          // Espace pour éviter le chevauchement avec la barre de navigation
+          SizedBox(height: MediaQuery.of(context).viewPadding.bottom + 10),
+        ],
       ),
     );
   }

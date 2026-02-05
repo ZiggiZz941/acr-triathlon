@@ -12,15 +12,15 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="ACR">
   
-  <!-- Icônes iOS - Utilisez les bonnes icônes -->
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="icons/Icon-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
+  <!-- Icônes iOS -->
+  <link rel="apple-touch-icon" href="assets/images/running_icon.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="assets/images/running_icon.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="assets/images/running_icon.png">
 
   <!-- Favicon et icônes Android -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
-  <link rel="icon" sizes="192x192" href="icons/Icon-192.png">
-  <link rel="icon" sizes="512x512" href="icons/Icon-512.png">
+  <link rel="icon" type="image/png" href="assets/images/running_icon.png"/>
+  <link rel="icon" sizes="192x192" href="assets/images/running_icon.png">
+  <link rel="icon" sizes="512x512" href="assets/images/running_icon.png">
 
   <title>ACR</title>
   <link rel="manifest" href="manifest.json">
@@ -39,25 +39,18 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      overflow: hidden; /* Évite les barres de défilement */
     }
     
     .loading-container {
       text-align: center;
       color: white;
-      width: 100%; /* Prend toute la largeur */
-      max-width: 400px; /* Limite la largeur max */
-      padding: 20px;
-      box-sizing: border-box; /* Inclut le padding dans la largeur */
     }
     
     .loading-logo {
       width: 120px;
       height: 120px;
-      margin: 0 auto 20px auto; /* 'auto' centre horizontalement */
-      display: block; /* Nécessaire pour que margin: auto fonctionne */
+      margin-bottom: 20px;
       animation: pulse 2s infinite;
-      object-fit: contain; /* Garde les proportions de l'image */
     }
     
     .loading-text {
@@ -90,9 +83,7 @@
 </head>
 <body>
   <div class="loading-container" id="loading-screen">
-    <!-- Utilisez running_icon.png qui est à la racine de web/ -->
-    <img src="running_icon.png" alt="Triathlon" class="loading-logo" onerror="this.style.display='none'; this.parentNode.querySelector('.logo-fallback').style.display='flex';">
-    <div class="logo-fallback" style="display: none; width: 120px; height: 120px; margin: 0 auto 20px; background: white; border-radius: 20px; align-items: center; justify-content: center; font-size: 40px;">🏃</div>
+    <img src="web/icons/running_icon.png" alt="Triathlon" class="loading-logo">
     <div class="loading-text">ACR</div>
     <div class="loading-subtext">Chargement de l'application...</div>
   </div>
@@ -102,41 +93,8 @@
   </div>
   
   <script>
-    // Script pour debug
+    // Script pour gérer l'affichage pendant le chargement
     window.addEventListener('load', function() {
-      console.log('Page chargée');
-      console.log('Test du chargement de l\'image...');
-      
-      // Test si l'image est chargée
-      var img = document.querySelector('.loading-logo');
-      if (img.complete && img.naturalHeight === 0) {
-        console.error('L\'image running_icon.png n\'a pas pu être chargée');
-        console.log('URL tentée:', img.src);
-        
-        // Test avec différentes URLs
-        var testUrls = [
-          'running_icon.png',
-          '/running_icon.png',
-          './running_icon.png',
-          'icons/running_icon.png',
-          '/icons/running_icon.png'
-        ];
-        
-        testUrls.forEach(function(url) {
-          var testImg = new Image();
-          testImg.onload = function() {
-            console.log('✓ Image trouvée à:', url);
-            img.src = url;
-          };
-          testImg.onerror = function() {
-            console.log('✗ Image non trouvée à:', url);
-          };
-          testImg.src = url;
-        });
-      } else {
-        console.log('✓ Image chargée avec succès');
-      }
-      
       // Cache l'écran de chargement quand Flutter est prêt
       setTimeout(function() {
         document.getElementById('loading-screen').style.display = 'none';
