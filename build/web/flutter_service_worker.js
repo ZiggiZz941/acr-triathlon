@@ -4,7 +4,7 @@ const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
 const RESOURCES = {"triathlon-app.zip": "0a659f7bd66125b8140c4c0a8b3ffc37",
-"flutter_bootstrap.js": "7e8ad503f6e9c540e6104ece289fad49",
+"flutter_bootstrap.js": "7b427ed6b4edce578da9239cf7e73f1d",
 "main.dart.js": "8db37bff6530f43e8187b96ac0b824cb",
 "index.html": "326a48385ffcdeb8423d7415f2ee0086",
 "/": "326a48385ffcdeb8423d7415f2ee0086",
